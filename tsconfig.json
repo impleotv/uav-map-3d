@@ -13,11 +13,13 @@
       "DOM"
     ],
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "jsx": "react-jsx"
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.mjs"
+    "src/**/*.mjs",
+    "src/**/*.jsx"
   ],
   "exclude": [
     "src/vite.mjs"

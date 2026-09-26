@@ -7,13 +7,13 @@ Cesium, and has no React, STView, backend, playback or MISB dependency.
 ## Install
 
 ```sh
-npm install github:impleotv/uav-map-3d#v0.1.0 cesium@1.145.0
+npm install github:impleotv/uav-map-3d#v0.2.0 cesium@1.145.0
 ```
 
 The package name is `@impleotv-pm/uav-map-3d`. Git installs compile the source
 through `prepare`; consumers receive ES modules and TypeScript declarations.
 Node 22.12 or later is recommended for the bundled development tools. The
-initial release requires the tested Cesium 1.145.0 peer so the application and
+renderer requires the tested Cesium 1.145.0 peer so the application and
 renderer use one Cesium instance. Git access uses your existing credentials;
 never embed a token in dependency URLs.
 
@@ -68,6 +68,8 @@ its platforms and selection. Multiple viewers in one page must use the same
   `normalizeFrustumStyle`.
 - `/models`: preset labels, defaults, layered resolution, validation, display
   names and URL resolution. This lightweight entry does not load Cesium.
+- `/react`: optional controlled `PresentationEditor`, lazy `ModelPreview`, and component types.
+- `/react/styles.css`: scoped editor styles (also imported by the components).
 - `/orientation`: `modelOrientation` for a host's Cesium model preview.
 - `/styles.css`: Cesium widget styles; preserve CSS during bundling.
 - `/vite`: Node-only runtime asset plugin.
@@ -78,6 +80,12 @@ The host also owns metadata decoding, live/stale state, playback, persistence,
 provider selection, offline access policy and user interface. Standard Cesium
 credits are retained; any product branding belongs to its host application.
 See [RENDERER.md](RENDERER.md) for camera, geometry, units and validity semantics.
+
+## Optional React configuration UI
+
+Install React 18 or 19 in the host application. The root renderer does not import
+React; only the `/react` entry requires it. See [REACT.md](REACT.md) for controlled
+values, model imports, preview customization, and styling.
 
 ## Other bundlers and static hosting
 
@@ -103,13 +111,16 @@ npm run sample:preview
 
 The standalone sample runs ten platforms and 500 targets at 10 Hz using local
 assets. `verify:package` installs a packed tarball in an isolated consumer,
-checks its declarations, builds the sample and validates emitted resources.
+checks its declarations, builds the samples and validates emitted resources. It first
+verifies a renderer-only install without React, then installs React and checks the UI consumer.
+The linked `presentation.html` example demonstrates editing and preview mount/unmount
+under React Strict Mode without any STView code or backend.
 Scratch consumers remain in ignored `.cache/` for inspection.
 
 To test edits in STView, run `npm pack` here, then from its `frontend/` directory:
 
 ```sh
-npm install --no-save --package-lock=false C:/Work/uav-map-3d/impleotv-pm-uav-map-3d-0.1.0.tgz
+npm install --no-save --package-lock=false C:/Work/uav-map-3d/impleotv-pm-uav-map-3d-0.2.0.tgz
 ```
 
 Repack and reinstall after changes. This avoids linked packages resolving a

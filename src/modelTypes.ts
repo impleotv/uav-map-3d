@@ -15,3 +15,10 @@ export type PresentationModel = {
   fixedPosition?:PresentationPosition|null;
   fixedAttitude?:PresentationAttitude|null;
 };
+
+type NumericDraft<T> = {[K in keyof T]: T[K] extends number ? number | "" : T[K]};
+/** Empty numeric fields are valid while editing; validate before saving/rendering. */
+export type PresentationDraft = Omit<NumericDraft<PresentationModel>, "fixedPosition" | "fixedAttitude"> & {
+  fixedPosition?: NumericDraft<PresentationPosition> | null;
+  fixedAttitude?: NumericDraft<PresentationAttitude> | null;
+};

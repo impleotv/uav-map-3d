@@ -20,14 +20,14 @@ mkdirSync(path.join(root,".cache"),{recursive:true});
 const consumer=mkdtempSync(path.join(root,".cache","consumer-"));
 const [packed]=JSON.parse(run(npm,["pack","--json","--pack-destination",consumer]));
 const names=new Set(packed.files.map(file=>file.path));
-for(const name of ["dist/index.js","dist/index.d.ts","dist/models.d.mts","dist/orientation.d.mts","dist/vite.mjs","dist/vite.d.mts","dist/styles.css","assets/geoid/NOTICE.txt","assets/geoid/egm96_15.gtx","NOTICE.md"])
+for(const name of ["dist/react/index.js","dist/react/index.d.ts","dist/react/PresentationEditor.js","dist/react/ModelPreview.js","dist/react/types.d.ts","dist/react/presentation.css","dist/index.js","dist/index.d.ts","dist/models.d.mts","dist/orientation.d.mts","dist/vite.mjs","dist/vite.d.mts","dist/styles.css","assets/geoid/NOTICE.txt","assets/geoid/egm96_15.gtx","NOTICE.md"])
   assert.ok(names.has(name),`Missing packed file ${name}`);
 assert.ok(![...names].some(name=>name.startsWith("src/") || name.startsWith("test/")));
 writeFileSync(path.join(consumer,"package.json"),JSON.stringify({private:true,type:"module"}));
 run(npm,["install","--ignore-scripts","--no-audit","--no-fund",path.join(consumer,packed.filename),"cesium@1.145.0"],consumer);
 mkdirSync(path.join(consumer,"sample"));
 for(const name of ["index.html","main.ts","assets.d.ts"]) copyFileSync(path.join(root,"sample",name),path.join(consumer,"sample",name));
-writeFileSync(path.join(consumer,"vite.config.mjs"),'import {uavMap3dAssets} from "@impleotv-pm/uav-map-3d/vite";\nexport default {base:"./",plugins:[uavMap3dAssets()]};\n');
+writeFileSync(path.join(consumer,"vite.config.mjs"),'import {fileURLToPath} from "node:url";\nimport {uavMap3dAssets} from "@impleotv-pm/uav-map-3d/vite";\nexport default {base:"./",plugins:[uavMap3dAssets()]};\n');
 writeFileSync(path.join(consumer,"tsconfig.json"),JSON.stringify({compilerOptions:{target:"ES2022",module:"ESNext",moduleResolution:"Bundler",strict:true,noEmit:true,skipLibCheck:true,lib:["ES2022","DOM"]},include:["sample/**/*.ts"]}));
 run(path.join(path.dirname(require.resolve("typescript/package.json")),"bin/tsc"),["-p","tsconfig.json"],consumer);
 const vite=path.join(path.dirname(require.resolve("vite/package.json")),"bin/vite.js");
@@ -44,3 +44,14 @@ for(const preset of ["uav","helicopter","quadcopter","camera"]) {
     assert.ok(existsSync(path.resolve(path.dirname(filename),item.uri)));
 }
 console.log(`Packed package, declarations and standalone consumer assets verified: ${consumer}`);
+
+// The renderer-only consumer does not install the optional React peer.
+assert.ok(!existsSync(path.join(consumer,"node_modules/react")));
+run(npm,["install","--ignore-scripts","--no-audit","--no-fund","react@19.3.0","react-dom@19.3.0","@types/react@19.3.0","@types/react-dom@19.3.0"],consumer);
+for(const name of ["presentation.html","presentation.tsx"]) copyFileSync(path.join(root,"sample",name),path.join(consumer,"sample",name));
+writeFileSync(path.join(consumer,"tsconfig.json"),JSON.stringify({compilerOptions:{target:"ES2022",module:"ESNext",moduleResolution:"Bundler",jsx:"react-jsx",strict:true,noEmit:true,skipLibCheck:true,lib:["ES2022","DOM"]},include:["sample/**/*.ts","sample/**/*.tsx"]}));
+run(path.join(path.dirname(require.resolve("typescript/package.json")),"bin/tsc"),["-p","tsconfig.json"],consumer);
+writeFileSync(path.join(consumer,"vite.config.mjs"),'import {fileURLToPath} from "node:url";\nimport {uavMap3dAssets} from "@impleotv-pm/uav-map-3d/vite";\nexport default {base:"./",plugins:[uavMap3dAssets()],build:{rollupOptions:{input:fileURLToPath(new URL("./sample/presentation.html",import.meta.url))}}};\n');
+run(vite,["build","sample","--config","vite.config.mjs"],consumer);
+assert.ok(existsSync(path.join(output,"presentation.html")));
+console.log("Optional React consumer types and production UI build verified.");

@@ -9,9 +9,11 @@
     "lib": [
       "ES2022",
       "DOM"
-    ]
+    ],
+    "jsx": "react-jsx"
   },
   "include": [
-    "sample/**/*.ts"
+    "sample/**/*.ts",
+    "sample/**/*.tsx"
   ]
 }

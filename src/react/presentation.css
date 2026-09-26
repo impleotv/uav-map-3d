@@ -1,0 +1,15 @@
+.uav3d-editor {color:inherit; min-width:0;}
+.uav3d-editor fieldset {border:0; padding:0; margin:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;}
+.uav3d-editor label {display:flex; flex-direction:column; gap:5px; font-size:14px;}
+.uav3d-editor input:not([type=checkbox]), .uav3d-editor select {box-sizing:border-box; width:100%; color:inherit; background:var(--uav3d-input-background,#182734); border:1px solid var(--uav3d-border-color,#496176); border-radius:5px; padding:8px; min-width:0;}
+.uav3d-editor input[hidden] {display:none;}
+.uav3d-editor .uav3d-check {flex-direction:row; align-items:center; grid-column:1/-1;}
+.uav3d-model-field {display:flex; align-items:flex-end; gap:8px; grid-column:1/-1; min-width:0;}
+.uav3d-model-field>label {flex:1; min-width:0;}
+.uav3d-upload {display:inline-flex; align-items:center; gap:6px; min-height:36px; flex-shrink:0;}
+.uav3d-editor button, .uav3d-preview button {color:inherit; background:var(--uav3d-button-background,#263d50); border:1px solid var(--uav3d-border-color,#496176); border-radius:5px; padding:8px 12px; cursor:pointer;}
+.uav3d-editor button:disabled {opacity:.5; cursor:default;}
+.uav3d-preview {height:var(--uav3d-preview-height,270px); position:relative; margin-top:12px; overflow:hidden; border-radius:6px;}
+.uav3d-preview-canvas {height:100%;}
+.uav3d-preview button {position:absolute; top:8px; right:8px; z-index:1;}
+.uav3d-preview-status {min-height:1.5em; font-size:13px;}
