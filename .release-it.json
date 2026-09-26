@@ -1,0 +1,44 @@
+{
+  "git": {
+    "requireCleanWorkingDir": true,
+    "requireUpstream": true,
+    "requireCommits": true,
+    "commitMessage": "chore(release): v${version}",
+    "tagName": "v${version}",
+    "tagAnnotation": "Release v${version}",
+    "pushArgs": ["--follow-tags", "--atomic"]
+  },
+  "npm": {"publish": false},
+  "github": {
+    "release": true,
+    "releaseName": "v${version}",
+    "assets": [".cache/releases/${version}/*.tgz", "CHANGELOG.md"]
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "infile": "CHANGELOG.md",
+      "preset": {
+        "name": "conventionalcommits",
+        "types": [
+          {"type": "feat", "section": "Features"},
+          {"type": "fix", "section": "Bug Fixes"},
+          {"type": "perf", "section": "Performance"},
+          {"type": "chore", "section": "Maintenance", "effect": "changelog"},
+          {"type": "docs", "section": "Documentation", "effect": "changelog"},
+          {"type": "refactor", "section": "Refactoring", "effect": "changelog"},
+          {"type": "test", "section": "Tests", "effect": "changelog"},
+          {"type": "build", "section": "Build", "effect": "changelog"},
+          {"type": "ci", "section": "CI", "effect": "changelog"}
+        ]
+      }
+    }
+  },
+  "hooks": {
+    "before:git:release": [
+      "npm test",
+      "npm run typecheck",
+      "npm run verify:package",
+      "node scripts/pack-release.mjs"
+    ]
+  }
+}

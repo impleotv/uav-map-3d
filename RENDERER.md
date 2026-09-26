@@ -102,8 +102,12 @@ the vertical datum, not a replacement for local survey corrections.
 packet of `Truck.ts` (PID 258, PTS 120.221056). The regression check verifies that
 its 1,867 m MSL ground target is not extrapolated to a sea-level intersection.
 
-The host resolves asset URLs and enforces offline provider selection. No ion
-account is required. Serve Cesium Assets, Workers, ThirdParty, and Widgets at
+The host resolves asset URLs and enforces offline provider selection for explicit
+URLs. Optional `configureMap({ion: {accessToken, worldTerrain, osmBuildings,
+bingAerial, googlePhotorealistic}})` enables online Cesium content; all flags default to false.
+`offline: true` suppresses ion content. Explicit terrain/imagery URLs take
+precedence, and each call replaces the previous map configuration. No ion
+account is required for local content. Serve Cesium Assets, Workers, ThirdParty, and Widgets at
 `cesiumBaseUrl`; serve preset models and the EGM96 grid at `assetBaseUrl`.
 
 Run `npm run sample` for the standalone

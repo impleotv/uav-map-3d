@@ -4,7 +4,28 @@ test("presentation import delegates picker ownership to its host",async()=>{
   const {createServer}=await import("vite");
   const server=await createServer({configFile:false,server:{middlewareMode:true},appType:"custom"});
   try{
-    const {PresentationEditor}=await server.ssrLoadModule("/src/react/PresentationEditor.jsx");
+    const {MapEditor,mapConfigError}=await server.ssrLoadModule("/dist/react/MapEditor.js");
+    const mapNodes=[];
+    const walk=node=>{if(!node||typeof node!=="object")return;if(Array.isArray(node)){node.forEach(walk);return;}mapNodes.push(node);walk(node.props?.children);};
+    let nextMap;
+    const mapValue={terrainUrl:"local",ion:{accessToken:"",worldTerrain:false}};
+    walk(MapEditor({value:mapValue,onChange:value=>{nextMap=value;}}));
+    const token=mapNodes.find(n=>n.type==="input"&&n.props.type==="password");
+    assert.ok(token);token.props.onChange({target:{value:"user-token"}});
+    assert.equal(nextMap.ion.accessToken,"user-token");assert.equal(nextMap.terrainUrl,"local");assert.equal(mapValue.ion.accessToken,"");
+    const toggles=mapNodes.filter(n=>n.type==="input"&&n.props.type==="checkbox");
+    assert.ok(toggles.every(n=>!n.props.checked),"all options start off");
+    assert.equal(toggles.length,5,"offline and four optional online layers");
+    toggles[4].props.onChange({target:{checked:true}});
+    assert.equal(nextMap.ion.googlePhotorealistic,true);assert.ok(mapConfigError(nextMap));
+    assert.equal(toggles[1].props.disabled,true,"custom terrain wins");
+    toggles[2].props.onChange({target:{checked:true}});
+    assert.ok(mapConfigError(nextMap));
+    assert.equal(mapConfigError({...nextMap,offline:true}),"");
+    mapNodes.length=0;
+    walk(MapEditor({value:{...nextMap,offline:true},onChange:()=>{}}));
+    assert.ok(mapNodes.filter(n=>n.type==="input").slice(1).every(n=>n.props.disabled));
+    const {PresentationEditor}=await server.ssrLoadModule("/dist/react/PresentationEditor.js");
     const imports=[],changes=[];
     const models=[
       {id:"bundled:Zebra.gltf",name:"Zebra",bundled:true},{id:"bundled:Heron.glb",name:"Heron",bundled:true},{id:"imported-id",name:"Local aircraft"},

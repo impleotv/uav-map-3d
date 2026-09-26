@@ -5,6 +5,7 @@ import {
   Ellipsoid, Ray, IntersectionTests, PerspectiveFrustum,
   HeadingPitchRange, Math as CesiumMath, buildModuleUrl,
   GeographicTilingScheme, WebMercatorTilingScheme, Model,
+  IonResource, IonImageryProvider, IonWorldImageryStyle, Cesium3DTileset,
 } from "cesium";
 import { sensorGroundGeometry, groundOutlineSegments } from "./ground.mjs";
 import { sceneAxes } from "./math.mjs";
@@ -44,6 +45,8 @@ export class Scene {
   };
   private destroyed = false;
   private mapGeneration = 0;
+  private osmBuildings?: Cesium3DTileset;
+  private googlePhotorealistic?: Cesium3DTileset;
   private initialFramed = false;
   private geoid: ((lat: number, lon: number) => number) | null = null;
   private removeCameraListener: () => void;
@@ -483,26 +486,88 @@ export class Scene {
   resetSource(sourceId: string) { for (const [id,entry] of this.platforms) if (entry.data.sourceId === sourceId) this.removePlatform(id); }
 
   async configureMap(config: MapConfig) {
+    if (this.destroyed) return;
     const generation = ++this.mapGeneration;
-    // Offline callers supply only explicitly configured local asset/server URLs.
-    let terrain = new EllipsoidTerrainProvider() as EllipsoidTerrainProvider | CesiumTerrainProvider;
-    if (config.terrainUrl) {
-      try { terrain = await CesiumTerrainProvider.fromUrl(config.terrainUrl); }
-      catch(error) { this.error(`Terrain could not load: ${String(error)}. Using the ellipsoid globe.`); }
-    }
-    if (this.destroyed || generation !== this.mapGeneration) return;
-    this.viewer.terrainProvider = terrain;
-    this.targets?.invalidateSurface();
-    terrain.errorEvent.addEventListener(error => this.error(`Terrain tile unavailable: ${error.message}`));
+    const current = () => !this.destroyed && generation === this.mapGeneration;
+    const refresh = () => {
+      this.targets?.invalidateSurface();
+      for (const entry of this.platforms.values()) this.render(entry);
+      this.viewer.scene.requestRender();
+    };
+    // Each call replaces the configuration. Remove online content immediately,
+    // including when switching offline while an earlier load is still pending.
+    if (this.osmBuildings) this.viewer.scene.primitives.remove(this.osmBuildings);
+    this.osmBuildings = undefined;
+    if (this.googlePhotorealistic) this.viewer.scene.primitives.remove(this.googlePhotorealistic);
+    this.googlePhotorealistic = undefined;
+    this.viewer.scene.globe.show = true;
+    this.viewer.terrainProvider = new EllipsoidTerrainProvider();
     this.viewer.imageryLayers.removeAll();
-    if (config.imageryUrl) {
-      const provider = new UrlTemplateImageryProvider({url:config.imageryScheme==="tms" ? config.imageryUrl.replaceAll("{y}","{reverseY}") : config.imageryUrl,credit:config.imageryAttribution,maximumLevel:config.imageryMaxLevel??19,
-        tilingScheme:config.imageryProjection==="geographic"?new GeographicTilingScheme():new WebMercatorTilingScheme()});
-      provider.errorEvent.addEventListener(error => this.error(`Imagery tile unavailable: ${error.message}`));
-      this.viewer.imageryLayers.addImageryProvider(provider);
-    }
-    for (const entry of this.platforms.values()) this.render(entry);
-    this.viewer.scene.requestRender();
+    refresh();
+    const ion = config.offline ? undefined : config.ion;
+    const accessToken = ion?.accessToken?.trim();
+    const requested = ion && (ion.worldTerrain || ion.osmBuildings || ion.bingAerial || ion.googlePhotorealistic);
+    if (requested && !accessToken) this.error("A Cesium ion access token is required for online map content.");
+    const online = accessToken ? ion : undefined;
+    const report = (message: string) => { if (current()) this.error(message); };
+    // Keep independent services usable if another service is unavailable.
+    await Promise.all([
+      (async () => {
+        try {
+          const url = config.terrainUrl || (online?.worldTerrain
+            ? await IonResource.fromAssetId(1, {accessToken}) : undefined);
+          if (!url || !current()) return;
+          const terrain = await CesiumTerrainProvider.fromUrl(url);
+          if (!current()) return;
+          terrain.errorEvent.addEventListener(() => report("Terrain tile unavailable."));
+          this.viewer.terrainProvider = terrain;
+          refresh();
+        } catch { report("Terrain could not load. Check the URL or ion token and asset access. Using the ellipsoid globe."); }
+      })(),
+      (async () => {
+        try {
+          const provider = config.imageryUrl
+            ? new UrlTemplateImageryProvider({url:config.imageryScheme==="tms" ? config.imageryUrl.replaceAll("{y}","{reverseY}") : config.imageryUrl,credit:config.imageryAttribution,maximumLevel:config.imageryMaxLevel??19,
+              tilingScheme:config.imageryProjection==="geographic"?new GeographicTilingScheme():new WebMercatorTilingScheme()})
+            : online?.bingAerial ? await IonImageryProvider.fromAssetId(IonWorldImageryStyle.AERIAL, {accessToken}) : undefined;
+          if (!provider || !current()) return;
+          provider.errorEvent.addEventListener(() => report("Imagery tile unavailable."));
+          this.viewer.imageryLayers.addImageryProvider(provider);
+          this.viewer.scene.requestRender();
+        } catch { report("Imagery could not load. Check the URL or ion token and asset access."); }
+      })(),
+      (async () => {
+        if (!online?.osmBuildings) return;
+        try {
+          const resource = await IonResource.fromAssetId(96188, {accessToken});
+          if (!current()) return;
+          const buildings = await Cesium3DTileset.fromUrl(resource);
+          if (!current()) { buildings.destroy(); return; }
+          buildings.tileFailed.addEventListener(() => report("OSM Buildings tile unavailable."));
+          this.osmBuildings = this.viewer.scene.primitives.add(buildings);
+          buildings.show = !this.googlePhotorealistic;
+          this.viewer.scene.requestRender();
+        } catch { report("OSM Buildings could not load. Check the ion token and asset access."); }
+      })(),
+      (async () => {
+        if (!online?.googlePhotorealistic) return;
+        try {
+          // Resolve with this scene's token; the convenience factory uses a
+          // global token/cache. The viewer has no geocoder.
+          const resource = await IonResource.fromAssetId(2275207, {accessToken});
+          if (!current()) return;
+          const tiles = await Cesium3DTileset.fromUrl(resource, {enableCollision:true});
+          if (!current()) { tiles.destroy(); return; }
+          tiles.tileFailed.addEventListener(() => report("Google Photorealistic 3D tile unavailable."));
+          this.googlePhotorealistic = this.viewer.scene.primitives.add(tiles);
+          // Google includes its own ground mesh. Preserve the globe object
+          // for existing geometry calculations and later map restoration.
+          this.viewer.scene.globe.show = false;
+          if (this.osmBuildings) this.osmBuildings.show = false;
+          this.viewer.scene.requestRender();
+        } catch { report("Google Photorealistic 3D Tiles could not load. Enable the Google asset in Cesium ion and check your token's access. Keeping the configured map."); }
+      })(),
+    ]);
   }
 
   destroy() {

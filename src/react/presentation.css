@@ -1,4 +1,8 @@
 .uav3d-editor {color:inherit; min-width:0;}
+.uav3d-map-editor {margin-top:16px;}
+.uav3d-map-help, .uav3d-map-token {grid-column:1/-1;}
+.uav3d-map-help {font-size:13px; line-height:1.5; margin:4px 0;}
+.uav3d-map-help a {color:inherit;}
 .uav3d-editor fieldset {border:0; padding:0; margin:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;}
 .uav3d-editor label {display:flex; flex-direction:column; gap:5px; font-size:14px;}
 .uav3d-editor input:not([type=checkbox]), .uav3d-editor select {box-sizing:border-box; width:100%; color:inherit; background:var(--uav3d-input-background,#182734); border:1px solid var(--uav3d-border-color,#496176); border-radius:5px; padding:8px; min-width:0;}

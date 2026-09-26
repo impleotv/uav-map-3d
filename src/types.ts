@@ -38,6 +38,14 @@ export type TargetFrame = {
 };
 export type ModelConfig = import("./modelTypes.js").PresentationModel;
 export type MapConfig = {
+  /** Optional online content. Disabled unless explicitly selected; offline overrides it. */
+  ion?: {
+    accessToken: string;
+    worldTerrain?: boolean;
+    osmBuildings?: boolean;
+    bingAerial?: boolean;
+    googlePhotorealistic?: boolean;
+  };
   terrainUrl?: string;
   imageryUrl?: string;
   imageryScheme?: "xyz" | "tms";

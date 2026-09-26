@@ -29,6 +29,28 @@ expresses that state. Use `presentationError(draft)` before applying or saving
 a draft. A valid `PresentationModel` remains compatible with the editor.
 An invalid draft leaves the last valid preview intact while showing the error.
 
+## Optional map content settings
+
+Include `MapEditor` in the host's configuration dialog, or pass `mapConfig`
+and `onMapConfigChange` to `PresentationEditor` to embed the same controls.
+The four online layers start unchecked. A masked token field accepts the
+user's own Cesium ion token. Offline mode disables online controls; custom
+URLs take precedence over the corresponding online provider.
+Google Photorealistic 3D Tiles uses the same token and hides the visible globe
+and OSM buildings once loaded. The editor explains this alongside the option.
+
+```tsx
+import {MapEditor, mapConfigError} from "@impleotv-pm/uav-map-3d/react";
+// draft is a MapConfig; the host owns Save/Cancel and persistence.
+<MapEditor value={draft} onChange={setDraft} busy={saving} />
+// On Save, validate before applying:
+if (!mapConfigError(draft)) await scene.configureMap(draft);
+```
+
+The editor neither stores the token nor requests online assets while typing.
+Applying the configuration belongs to the host; the model preview does not
+load map content. Avoid exposing the token in diagnostic dumps or logs.
+
 ## Model catalogs and imports
 
 - `models`: `{id, name, bundled?}[]`; IDs are opaque host-owned identifiers.

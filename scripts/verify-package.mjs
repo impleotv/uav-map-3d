@@ -20,6 +20,8 @@ mkdirSync(path.join(root,".cache"),{recursive:true});
 const consumer=mkdtempSync(path.join(root,".cache","consumer-"));
 const [packed]=JSON.parse(run(npm,["pack","--json","--pack-destination",consumer]));
 const names=new Set(packed.files.map(file=>file.path));
+assert.ok(names.has("CHANGELOG.md"), "Missing packed CHANGELOG.md");
+assert.ok(names.has("dist/react/MapEditor.js"), "Missing packed MapEditor");
 for(const name of ["dist/react/index.js","dist/react/index.d.ts","dist/react/PresentationEditor.js","dist/react/ModelPreview.js","dist/react/types.d.ts","dist/react/presentation.css","dist/index.js","dist/index.d.ts","dist/models.d.mts","dist/orientation.d.mts","dist/vite.mjs","dist/vite.d.mts","dist/styles.css","assets/geoid/NOTICE.txt","assets/geoid/egm96_15.gtx","NOTICE.md"])
   assert.ok(names.has(name),`Missing packed file ${name}`);
 assert.ok(![...names].some(name=>name.startsWith("src/") || name.startsWith("test/")));
@@ -49,6 +51,12 @@ console.log(`Packed package, declarations and standalone consumer assets verifie
 assert.ok(!existsSync(path.join(consumer,"node_modules/react")));
 run(npm,["install","--ignore-scripts","--no-audit","--no-fund","react@19.3.0","react-dom@19.3.0","@types/react@19.3.0","@types/react-dom@19.3.0"],consumer);
 for(const name of ["presentation.html","presentation.tsx"]) copyFileSync(path.join(root,"sample",name),path.join(consumer,"sample",name));
+writeFileSync(path.join(consumer,"sample/map-contract.ts"),`import {MapEditor, mapConfigError, type MapEditorProps} from "@impleotv-pm/uav-map-3d/react";
+import type {MapConfig} from "@impleotv-pm/uav-map-3d";
+const value: MapConfig = {ion:{accessToken:"",worldTerrain:true,osmBuildings:true,bingAerial:true,googlePhotorealistic:true}};
+const props: MapEditorProps = {value,onChange:()=>{}};
+export const contract = {MapEditor, props, error:mapConfigError(value)};
+`);
 writeFileSync(path.join(consumer,"tsconfig.json"),JSON.stringify({compilerOptions:{target:"ES2022",module:"ESNext",moduleResolution:"Bundler",jsx:"react-jsx",strict:true,noEmit:true,skipLibCheck:true,lib:["ES2022","DOM"]},include:["sample/**/*.ts","sample/**/*.tsx"]}));
 run(path.join(path.dirname(require.resolve("typescript/package.json")),"bin/tsc"),["-p","tsconfig.json"],consumer);
 writeFileSync(path.join(consumer,"vite.config.mjs"),'import {fileURLToPath} from "node:url";\nimport {uavMap3dAssets} from "@impleotv-pm/uav-map-3d/vite";\nexport default {base:"./",plugins:[uavMap3dAssets()],build:{rollupOptions:{input:fileURLToPath(new URL("./sample/presentation.html",import.meta.url))}}};\n');

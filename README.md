@@ -12,7 +12,7 @@ npm install github:impleotv/uav-map-3d#v0.2.0 cesium@1.145.0
 
 The package name is `@impleotv-pm/uav-map-3d`. Git installs compile the source
 through `prepare`; consumers receive ES modules and TypeScript declarations.
-Node 22.12 or later is recommended for the bundled development tools. The
+Use Node 22.21+ (22.x) or Node 24+ for the bundled development and release tools. The
 renderer requires the tested Cesium 1.145.0 peer so the application and
 renderer use one Cesium instance. Git access uses your existing credentials;
 never embed a token in dependency URLs.
@@ -61,6 +61,47 @@ Call `scene.viewer.resize()` after changing container dimensions.
 Call `removePlatform(id)` or `resetSource(sourceId)` explicitly. Each Scene owns
 its platforms and selection. Multiple viewers in one page must use the same
 `cesiumBaseUrl`, because Cesium's resource base is process-wide.
+
+## Optional Cesium online content
+
+Pass a Cesium ion token with access to the selected assets:
+
+```ts
+await scene.configureMap({
+  ion: {
+    accessToken: "YOUR_CESIUM_ION_TOKEN",
+    worldTerrain: true,
+    osmBuildings: true,
+    bingAerial: true,
+    googlePhotorealistic: false, // Optional Google Photorealistic 3D Tiles
+  },
+});
+// Disable online layers and return to the ellipsoid globe:
+await scene.configureMap({offline: true});
+```
+
+All four options default to off and can be selected independently. Each call
+replaces the map configuration. Custom `terrainUrl` and `imageryUrl` take
+precedence over the corresponding ion options. `offline: true` suppresses ion
+content; the host must ensure any explicit URLs point to local resources.
+Tokens are passed per scene without changing Cesium's global token. Use a
+browser token restricted to the required assets and application URLs; the
+renderer does not persist it. Service failures are reported through `onError`
+and do not prevent other layers from loading. Cesium credits remain visible.
+
+World Terrain (asset 1), OSM Buildings (96188), and Bing Aerial (2) require
+Cesium ion access and applicable asset entitlements. Coverage and resolution
+vary by location. Buildings are a visual layer; sensor footprints and target
+projection continue to intersect the terrain surface, not building roofs.
+
+`googlePhotorealistic: true` loads Google Photorealistic 3D Tiles (asset
+2275207) using the same token. Enable this asset in the user's ion account and
+grant the token access. Once loaded, Google hides the visible globe and OSM
+buildings to avoid overlapping surfaces; disabling it restores the configured
+map. Offline mode disables Google as well. Initialization failure keeps the
+configured map visible. Sensor projections still use the existing terrain or
+ellipsoid calculations, not Google's mesh; ground overlays can be obscured by
+the photorealistic surface. Standard provider credits are retained.
 
 ## Public entry points
 
@@ -129,8 +170,48 @@ its normal CMake build runs `npm ci` as well. Do not commit a local file depende
 
 ## Release
 
-Update the package version and lockfile, run the checks above, commit the library,
-and push an immutable `v<version>` Git tag to `impleotv/uav-map-3d`. Consumers pin
-that tag and commit their generated lockfiles. No npm registry publication is
-required. Source uses `UNLICENSED` metadata; asset/dependency notices are in
-[NOTICE.md](NOTICE.md).
+Releases use [release-it](https://github.com/release-it/release-it) and its
+[Conventional Changelog plugin](https://github.com/release-it/conventional-changelog).
+Install dependencies with `npm ci`, and have GNU Make and Git available. Set
+`GITHUB_TOKEN` in your environment to a token with repository contents write
+access, and configure Git credentials for pushing. Commit your changes on a
+branch with an upstream, then run:
+
+```sh
+make release-preview
+make release
+```
+
+Use Conventional Commits for new changes:
+
+- `feat: add terrain mode` → minor release, under Features.
+- `fix: correct camera heading` → patch release, under Bug Fixes.
+- `chore: update tooling` → Maintenance entry, with no release on its own.
+- `feat!: change scene API` or a `BREAKING CHANGE:` footer → major release.
+
+Scopes such as `fix(camera): ...` are supported. Documentation, refactoring,
+tests, build and CI changes are also listed without triggering a version bump.
+The highest applicable bump wins. Nonconventional messages are omitted unless
+they carry a recognized breaking-change footer. Existing historical entries
+are preserved. For a maintenance-only release or an explicit override, use
+`make release VERSION=patch` or `make release VERSION=0.3.0`.
+
+The preview shows the version, grouped notes and planned commands without
+changing files or publishing; it uses local history, so fetch tags first if
+needed. The release requires a clean working tree, updates the package version,
+lockfile and [CHANGELOG.md](CHANGELOG.md), then runs tests, type checks and
+packed-consumer verification. After validation it commits the release, creates
+`v<version>`, pushes the branch and tags atomically, and publishes a GitHub release.
+The package tarball and full changelog are attached, and the changelog is included
+inside the package. GitHub release notes use the generated entry. No version is
+released automatically when there are only maintenance changes.
+
+If a release fails, inspect the local commit/tag and GitHub draft before retrying;
+do not move a published tag. See release-it's
+[recovery options](https://github.com/release-it/release-it/blob/main/docs/github-releases.md#update-the-latest-release)
+for completing an existing release without incrementing again.
+
+Without Make, use `npm run release` or `npm run release -- --preview`, optionally
+adding a version/bump argument. Consumers pin the Git tag and commit their
+generated lockfiles. No npm registry publication is performed. Source uses
+`UNLICENSED` metadata; asset/dependency notices are in [NOTICE.md](NOTICE.md).

@@ -1,5 +1,13 @@
 import type {Viewer} from "cesium";
 import type {PresentationDraft} from "../modelTypes.js";
+import type {MapConfig} from "../types.js";
+
+export type MapEditorProps = {
+  value: MapConfig;
+  onChange: (value:MapConfig) => void;
+  busy?: boolean;
+  error?: string;
+};
 
 export type PresentationAsset = {id:string; name:string; bundled?:boolean};
 export type ModelPreviewProps = {
@@ -25,6 +33,9 @@ export type PresentationEditorProps = {
   nameHelp?: string;
   showPreview?: boolean;
   onPreviewReady?: ModelPreviewProps["onReady"];
+  /** Supply both props to include map content settings in the editor. */
+  mapConfig?: MapConfig;
+  onMapConfigChange?: (value:MapConfig) => void;
 };
 
 export type {PresentationDraft} from "../modelTypes.js";
