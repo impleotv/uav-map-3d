@@ -1,10 +1,11 @@
 import React, {lazy, Suspense} from "react";
 import {presentationPresets, presentationError} from "../models.mjs";
 import "./presentation.css";
+import {MapEditor} from "./MapEditor.js";
 const ModelPreview = lazy(()=>import("./ModelPreview.js"));
 
 /** @param {import("./types.js").PresentationEditorProps} props */
-export function PresentationEditor({value, models=[], modelURL="", assetBaseUrl, cesiumBaseUrl, busy=false, error="", onChange, onImport, namePlaceholder="Automatic", nameHelp="Leave blank to use the name supplied by the host application.", showPreview=true, onPreviewReady}) {
+export function PresentationEditor({value, models=[], modelURL="", assetBaseUrl, cesiumBaseUrl, busy=false, error="", onChange, onImport, namePlaceholder="Automatic", nameHelp="Leave blank to use the name supplied by the host application.", showPreview=true, onPreviewReady, mapConfig, onMapConfigChange}) {
   const update=patch=>onChange({...value,...patch});
   // Uploaded copies can share a name with each other or a bundled model.
   // Retain the selected asset so opening the editor never changes its identity.
@@ -35,6 +36,7 @@ export function PresentationEditor({value, models=[], modelURL="", assetBaseUrl,
       </>}
     </fieldset>
     {(error||presentationError(value))&&<p role="alert">{error||presentationError(value)}</p>}
+    {mapConfig&&onMapConfigChange&&<MapEditor value={mapConfig} onChange={onMapConfigChange} busy={busy}/>}
     {showPreview&&(value.modelAssetId&&!modelURL?<p role="status">Selected model is loading or unavailable. Choose another model if it cannot be found.</p>:<Suspense fallback={<p>Loading model preview…</p>}><ModelPreview config={{...value,url:modelURL}} assetBaseUrl={assetBaseUrl} cesiumBaseUrl={cesiumBaseUrl} onReady={onPreviewReady}/></Suspense>)}
   </div>;
 }
