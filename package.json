@@ -1,0 +1,60 @@
+{
+  "name": "@impleotv-pm/uav-map-3d",
+  "version": "0.1.0",
+  "description": "Framework-neutral Cesium UAV scene renderer with sensor footprints and targets",
+  "type": "module",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/impleotv/uav-map-3d.git"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./models": {
+      "types": "./dist/models.d.mts",
+      "import": "./dist/models.mjs"
+    },
+    "./orientation": {
+      "types": "./dist/orientation.d.mts",
+      "import": "./dist/orientation.mjs"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.mts",
+      "import": "./dist/vite.mjs"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./assets/*": "./assets/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "NOTICE.md"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-support.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sample.json",
+    "prepare": "npm run build",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "sample": "vite --host 127.0.0.1",
+    "sample:build": "vite build",
+    "sample:preview": "vite preview --host 127.0.0.1",
+    "verify:package": "node scripts/verify-package.mjs"
+  },
+  "peerDependencies": {
+    "cesium": "1.145.0"
+  },
+  "devDependencies": {
+    "cesium": "1.145.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.1"
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+dist/
+sample-dist/
+.cache/
+*.tgz
+*.log

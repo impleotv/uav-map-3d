@@ -1,0 +1,53 @@
+{
+  "frameCenterOffEarth": false,
+  "frameCornersOffEarth": [
+    false,
+    false,
+    false,
+    false
+  ],
+  "position": {
+    "latitude": 31.57745840567046,
+    "longitude": 35.41397074023912,
+    "height": -379.23247119859616,
+    "reference": "msl"
+  },
+  "attitude": {
+    "heading": 20.98970016021973,
+    "pitch": -6.399999990314245,
+    "roll": 3.099999992689118
+  },
+  "sensor": null,
+  "fov": {
+    "horizontal": 83.00022888532845,
+    "vertical": 46.70908674753948
+  },
+  "range": 247.67941801056253,
+  "frameCenter": {
+    "latitude": 31.579509373558455,
+    "longitude": 35.414948405425505
+  },
+  "frameCorners": [
+    {
+      "latitude": 31.806442570782473,
+      "longitude": 35.31995864367111
+    },
+    {
+      "latitude": 31.68488037385274,
+      "longitude": 35.66854523293141
+    },
+    {
+      "latitude": 31.577717951302287,
+      "longitude": 35.414722429315894
+    },
+    {
+      "latitude": 31.578094089207283,
+      "longitude": 35.41364569003398
+    }
+  ],
+  "validity": {
+    "position": "valid",
+    "attitude": "valid",
+    "sensor": "missing"
+  }
+}

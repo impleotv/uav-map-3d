@@ -1,0 +1,9 @@
+EGM96 15-minute geoid undulation grid (egm96_15.gtx)
+Source: https://download.osgeo.org/proj/vdatum/egm96_15/egm96_15.gtx
+Producer: US National Geospatial-Intelligence Agency (NGA); GTX distribution by OSGeo PROJ.
+License: Public Domain.
+License reference: https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_README.txt
+SHA-256: c02a6eb70a7a78efebe5adf3ade626eb75390e170bb8b3f36136a2c28f5326a0
+
+STView uses bilinear interpolation of this grid: ellipsoid height = MSL height + geoid undulation.
+The 15-minute grid approximates the geoid and does not replace surveyed local vertical datums.
