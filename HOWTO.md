@@ -16,8 +16,27 @@ After the skill files are published to this repository, run this in the consumin
 project and select your agent when prompted:
 
 ```sh
-npx skills add impleotv/uav-map-3d --skill uav-map-3d
+npx skills add impleotv/uav-map-3d --skill uav-map-3d --agent '*'
 ```
+
+Run this in a regular terminal to get the standard Skills banner, progress
+indicators, agent/scope selection prompts, and installation summary, just like
+installing the CesiumJS skills. This display is provided by the `skills` CLI;
+no custom installer is needed. When run by an AI agent or through captured output,
+the CLI may suppress the banner and interactive prompts. `--list` only previews
+discovery and does not show a completed installation.
+
+For the same automatic installation flow as `--all`, while selecting only this
+library's skill, use:
+
+```sh
+npx skills add impleotv/uav-map-3d --skill uav-map-3d --agent '*' --yes
+```
+
+This installs the selected skill for all supported agents at project scope and
+skips confirmation prompts, while retaining the CLI's installation output.
+Avoid repository-wide `--all` here: this repository also contains CesiumJS
+development skills, which that option would select along with `uav-map-3d`.
 
 The skill files must be available on the selected repository revision. Private
 repository access uses your existing Git credentials. This change alone does not
