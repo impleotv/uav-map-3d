@@ -1,4 +1,5 @@
 import type {Viewer} from "cesium";
+import type {ReactNode} from "react";
 import type {PresentationDraft} from "../modelTypes.js";
 import type {MapConfig} from "../types.js";
 
@@ -32,6 +33,8 @@ export type PresentationEditorProps = {
   namePlaceholder?: string;
   nameHelp?: string;
   showPreview?: boolean;
+  /** Used by the model-only form; the tabbed editor always validates all tabs. */
+  showValidation?: boolean;
   onPreviewReady?: ModelPreviewProps["onReady"];
   /** Supply both props to include map content settings in the editor. */
   mapConfig?: MapConfig;
@@ -39,3 +42,37 @@ export type PresentationEditorProps = {
 };
 
 export type {PresentationDraft} from "../modelTypes.js";
+
+export type PresentationPanelProps = {
+  choices: {key:string;label:string}[];
+  selectedKey: string;
+  onSelect: (key:string)=>void;
+  description?: string;
+  children?: ReactNode;
+  loading?: boolean;
+  busy?: boolean;
+  error?: string;
+  saveDisabled?: boolean;
+  resetDisabled?: boolean;
+  onSave: ()=>void;
+  onReset?: ()=>void;
+  onClose: ()=>void;
+};
+export type SceneConfigDraft = Omit<MapConfig,"imageryMaxLevel"> & {
+  imageryMode?: "satellite" | "map" | "custom" | "bing";
+  terrainAssetId?: string;
+  imageryAssetId?: string;
+  imageryExtension?: string;
+  imageryMaxLevel?: number | "";
+};
+export type SceneConfigEditorProps = {
+  value: SceneConfigDraft;
+  onChange: (value:SceneConfigDraft)=>void;
+  assets?: {id:string;name:string;kind:string}[];
+  busy?: boolean;
+  error?: string;
+  storageName?: string;
+  onRegisterFolder?: (kind:"terrain"|"imagery",path:string)=>Promise<void>;
+  onSave: ()=>void;
+  onCancel: ()=>void;
+};

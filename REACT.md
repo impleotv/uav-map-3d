@@ -69,8 +69,8 @@ load map content. Avoid exposing the token in diagnostic dumps or logs.
 The preset selector clears custom model selection. An unresolved selected model
 shows a loading/unavailable message instead of displaying a different model.
 There are no STView, KLV, stream/PID, or backend assumptions in the components.
-Global/source/item inheritance, Save/Cancel, and modal or panel layout belong
-to the host.
+Source identities, inheritance layers, persistence, and modal placement belong
+to the host. Use the shared `PresentationPanel` for the selector and actions.
 
 ## Preview lifecycle and customization
 
@@ -113,3 +113,39 @@ host color and font. Override these CSS custom properties on a parent:
 ```
 
 Run `npm run sample` and open `/presentation.html` for the independent example.
+
+## Shared presentation and configuration panels
+
+`PresentationEditor` now renders **Model**, **VMTI**, and **Frustum** tabs. Model
+opens first; the preview exists only while that tab is active. Frustum contains
+independent **Footprint** and **Aircraft-to-ground lines** sections (initially
+expanded). Reset frustum appearance changes only the current controlled draft.
+Validation covers every tab, including hidden fields. The host must disable
+Save when `presentationError(draft)` is nonempty.
+
+`PresentationPanel` renders the selector above the editor and the Save, optional
+Use source settings, and Close actions. Supply `choices: {key, label}[]`,
+`selectedKey`, `onSelect`, `description`, loading/busy/error states, action
+callbacks, and the editor as children. An application adapter around the editor
+may load model catalogs, resolve URLs, and handle imports. Keep that adapter
+inside the shared panel; do not copy the fields, tabs, selector or actions.
+
+Presentation models accept optional `showVmtiTargets` and `frustum` fields.
+`resolvePresentation` merges the frustum's `rays` and `groundOutline` fields at
+each layer, preserving false and zero. Pass legacy scene values as the first
+layer, then global presentation, source, and platform layers. Missing fields
+inherit. Pass the resolved result to `Scene.configureModel(id, value)`; do not
+also apply legacy visibility as a scene-wide gate. Existing scene-wide renderer
+methods remain available for other consumers.
+
+`SceneConfigEditor` owns Map content, token removal, advanced terrain/imagery,
+asset selectors, folder-registration fields, and Save/Cancel. Supply a controlled
+`SceneConfigDraft`, `onChange`, `assets: {id, name, kind}[]`, `busy`, `storageName`,
+`onSave`, and `onCancel`. Optional `onRegisterFolder(kind, path)` returns a promise:
+the host registers the folder and updates its assets and draft, while the editor
+handles input and errors. Rejection keeps the path available for correction.
+Use `sceneConfigError` for draft validation. The editor never contacts a backend.
+
+The lower-level `MapEditor` and existing optional `mapConfig` props remain
+supported. Applications with the complete settings UI should use
+`SceneConfigEditor` to avoid duplicating those controls.

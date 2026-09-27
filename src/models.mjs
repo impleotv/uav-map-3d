@@ -1,3 +1,4 @@
+import {defaultFrustumStyle, normalizeFrustumStyle} from "./frustumStyle.mjs";
 export const presentationPresets = Object.freeze({uav:"UAV / fixed-wing", helicopter:"Helicopter", quadcopter:"Quadcopter", camera:"Stationary camera"});
 export const presentationDefaults = Object.freeze({preset:"uav", modelAssetId:"", name:"", visible:true, scale:1, headingOffset:0, pitchOffset:0, rollOffset:0});
 
@@ -7,10 +8,18 @@ export function presentationName(config, fallback) {
 
 // Layers are passed by the host; this module knows nothing about streams or storage.
 export function resolvePresentation(...layers) {
-  return Object.assign({}, presentationDefaults, ...layers.filter(Boolean));
+  const result={...presentationDefaults,showVmtiTargets:true,frustum:{rays:{...defaultFrustumStyle.rays},groundOutline:{...defaultFrustumStyle.groundOutline}}};
+  for(const layer of layers.filter(Boolean)) {
+    const {frustum,...fields}=layer;
+    Object.assign(result,Object.fromEntries(Object.entries(fields).filter(([,value])=>value!==undefined)));
+    for(const key of ["rays","groundOutline"])Object.assign(result.frustum[key],frustum?.[key]);
+  }
+  return result;
 }
 
 export function presentationError(value) {
+  if(value.showVmtiTargets!==undefined&&typeof value.showVmtiTargets!=="boolean")return "Target visibility must be a boolean.";
+  try {normalizeFrustumStyle(value.frustum);} catch(error) {return error.message;}
   if (!Object.hasOwn(presentationPresets, value.preset)) return "Choose a supported preset.";
   if (typeof (value.name??"") !== "string" || (value.name??"").length > 256) return "Display name must be at most 256 characters.";
   if (!Number.isFinite(value.scale) || value.scale < 0.001 || value.scale > 1000) return "Scale must be between 0.001 and 1000.";

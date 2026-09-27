@@ -159,6 +159,8 @@ export class Scene {
 
   configureModel(id: string, config: ModelConfig) {
     const entry = this.platforms.get(id); if (!entry) return;
+    if(config.showVmtiTargets!==undefined&&typeof config.showVmtiTargets!=="boolean")throw new Error("Target visibility must be a boolean");
+    if(config.frustum)normalizeFrustumStyle(config.frustum);
     entry.config = {...defaults,...config}; this.render(entry);
     // A configured stationary position may be the first usable position,
     // including when reopening after the geoid grid has already loaded.
@@ -250,7 +252,8 @@ export class Scene {
       // Line indices can be reused as partial telemetry arrives; refresh the
       // style so a ground edge never inherits a faint sensor-ray appearance.
       const line=entity.polyline!;
-      const style=groundOutline?this.frustumStyle.groundOutline:this.frustumStyle.rays;
+      const key=groundOutline?"groundOutline":"rays";
+      const style={...this.frustumStyle[key],...config.frustum?.[key]};
       line.width=new ConstantProperty(style.width);
       line.material=new ColorMaterialProperty((data.stale?Color.GRAY:Color.fromCssColorString(style.color)).withAlpha(style.opacity));
       line.clampToGround=new ConstantProperty(groundOutline);
@@ -289,7 +292,7 @@ export class Scene {
         footprint=this.viewer.entities.add({id:`${data.id}:graphic:footprint`,polygon:{hierarchy:new CallbackProperty(()=>new PolygonHierarchy(entry.footprint??[]),false),material:color.withAlpha(0.04),perPositionHeight:true}});
         entry.graphics.push(footprint);
       }
-      footprint.polygon!.material=new ColorMaterialProperty((data.stale?Color.GRAY:Color.fromCssColorString(this.frustumStyle.groundOutline.color)).withAlpha(0.04));
+      footprint.polygon!.material=new ColorMaterialProperty((data.stale?Color.GRAY:Color.fromCssColorString(config.frustum?.groundOutline?.color??this.frustumStyle.groundOutline.color)).withAlpha(0.04));
       footprint.show=true;
     }
     const status=ground.center||ground.corners.some(Boolean)||data.frameCenterOffEarth||data.frameCornersOffEarth?.some(Boolean)?ground.status:attitude?"Sensor orientation incomplete":"Platform attitude unavailable";
@@ -304,7 +307,7 @@ export class Scene {
   private renderTargets(entry: Entry) {
     if(!this.targets)return;
     const frame=entry.data.targetFrame;
-    if(!frame||entry.data.stale||entry.config.visible===false){this.targets.remove(entry.data.id);return;}
+    if(!frame||entry.data.stale||entry.config.visible===false||entry.config.showVmtiTargets===false){this.targets.remove(entry.data.id);return;}
     if(!this.targets.visible)return;
     // The detection packet supplies geometry, never independently merged fields.
     const data=frame.geometry;

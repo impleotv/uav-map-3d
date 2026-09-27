@@ -1,4 +1,11 @@
 import test from "node:test";
+import {createElement} from "react";
+import {renderToStaticMarkup} from "react-dom/server";
+function renderTree(Component,props) {
+  let tree;
+  function Capture(){tree=Component(props);return null;}
+  renderToStaticMarkup(createElement(Capture));return tree;
+}
 import assert from "node:assert/strict";
 test("presentation import delegates picker ownership to its host",async()=>{
   const {createServer}=await import("vite");
@@ -9,7 +16,7 @@ test("presentation import delegates picker ownership to its host",async()=>{
     const walk=node=>{if(!node||typeof node!=="object")return;if(Array.isArray(node)){node.forEach(walk);return;}mapNodes.push(node);walk(node.props?.children);};
     let nextMap;
     const mapValue={terrainUrl:"local",ion:{accessToken:"",worldTerrain:false}};
-    walk(MapEditor({value:mapValue,onChange:value=>{nextMap=value;}}));
+    walk(renderTree(MapEditor,{value:mapValue,onChange:value=>{nextMap=value;}}));
     const token=mapNodes.find(n=>n.type==="input"&&n.props.type==="password");
     assert.ok(token);token.props.onChange({target:{value:"user-token"}});
     assert.equal(nextMap.ion.accessToken,"user-token");assert.equal(nextMap.terrainUrl,"local");assert.equal(mapValue.ion.accessToken,"");
@@ -23,9 +30,9 @@ test("presentation import delegates picker ownership to its host",async()=>{
     assert.ok(mapConfigError(nextMap));
     assert.equal(mapConfigError({...nextMap,offline:true}),"");
     mapNodes.length=0;
-    walk(MapEditor({value:{...nextMap,offline:true},onChange:()=>{}}));
+    walk(renderTree(MapEditor,{value:{...nextMap,offline:true},onChange:()=>{}}));
     assert.ok(mapNodes.filter(n=>n.type==="input").slice(1).every(n=>n.props.disabled));
-    const {PresentationEditor}=await server.ssrLoadModule("/dist/react/PresentationEditor.js");
+    const {ModelEditor:PresentationEditor}=await server.ssrLoadModule("/dist/react/PresentationEditor.js");
     const imports=[],changes=[];
     const models=[
       {id:"bundled:Zebra.gltf",name:"Zebra",bundled:true},{id:"bundled:Heron.glb",name:"Heron",bundled:true},{id:"imported-id",name:"Local aircraft"},

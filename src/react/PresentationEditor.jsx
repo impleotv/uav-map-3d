@@ -1,11 +1,12 @@
-import React, {lazy, Suspense} from "react";
+import React, {lazy, Suspense, useId, useState} from "react";
 import {presentationPresets, presentationError} from "../models.mjs";
 import "./presentation.css";
+import {defaultFrustumStyle} from "../frustumStyle.mjs";
 import {MapEditor} from "./MapEditor.js";
 const ModelPreview = lazy(()=>import("./ModelPreview.js"));
 
 /** @param {import("./types.js").PresentationEditorProps} props */
-export function PresentationEditor({value, models=[], modelURL="", assetBaseUrl, cesiumBaseUrl, busy=false, error="", onChange, onImport, namePlaceholder="Automatic", nameHelp="Leave blank to use the name supplied by the host application.", showPreview=true, onPreviewReady, mapConfig, onMapConfigChange}) {
+export function ModelEditor({value, models=[], modelURL="", assetBaseUrl, cesiumBaseUrl, busy=false, error="", onChange, onImport, namePlaceholder="Automatic", nameHelp="Leave blank to use the name supplied by the host application.", showPreview=true, onPreviewReady, mapConfig, onMapConfigChange, showValidation=true}) {
   const update=patch=>onChange({...value,...patch});
   // Uploaded copies can share a name with each other or a bundled model.
   // Retain the selected asset so opening the editor never changes its identity.
@@ -35,8 +36,50 @@ export function PresentationEditor({value, models=[], modelURL="", assetBaseUrl,
         {value.fixedAttitude&&["heading","pitch","roll"].map(key=>numeric(key,`${key} (°)`,"fixedAttitude"))}
       </>}
     </fieldset>
-    {(error||presentationError(value))&&<p role="alert">{error||presentationError(value)}</p>}
-    {mapConfig&&onMapConfigChange&&<MapEditor value={mapConfig} onChange={onMapConfigChange} busy={busy}/>}
+    {showValidation&&(error||presentationError(value))&&<p role="alert">{error||presentationError(value)}</p>}
     {showPreview&&(value.modelAssetId&&!modelURL?<p role="status">Selected model is loading or unavailable. Choose another model if it cannot be found.</p>:<Suspense fallback={<p>Loading model preview…</p>}><ModelPreview config={{...value,url:modelURL}} assetBaseUrl={assetBaseUrl} cesiumBaseUrl={cesiumBaseUrl} onReady={onPreviewReady}/></Suspense>)}
+  </div>;
+}
+
+/** @param {import("./types.js").PresentationEditorProps} props */
+export function PresentationEditor(props) {
+  const [tab,setTab]=useState("model"), id=useId();
+  const {value,onChange,busy=false,mapConfig,onMapConfigChange}=props;
+  const tabs=[["model","Model"],["vmti","VMTI"],["frustum","Frustum"]];
+  const update=patch=>onChange({...value,...patch});
+  const keyboard=event=>{
+    const current=tabs.findIndex(([key])=>key===tab);
+    const index=event.key==="Home"?0:event.key==="End"?2:event.key==="ArrowRight"?(current+1)%3:event.key==="ArrowLeft"?(current+2)%3:null;
+    if(index===null)return;
+    event.preventDefault();setTab(tabs[index][0]);
+    event.currentTarget.querySelectorAll('[role="tab"]')[index].focus();
+  };
+  return <div className="uav3d-editor">
+    <div className="uav3d-tabs" role="tablist" aria-label="Presentation settings" onKeyDown={keyboard}>
+      {tabs.map(([key,label])=><button key={key} type="button" role="tab" id={`${id}-${key}-tab`} aria-controls={`${id}-${key}`} aria-selected={tab===key} tabIndex={tab===key?0:-1} onClick={()=>setTab(key)}>{label}</button>)}
+    </div>
+    {tabs.map(([key])=><div key={key} role="tabpanel" id={`${id}-${key}`} aria-labelledby={`${id}-${key}-tab`} hidden={tab!==key} tabIndex={0}>
+      {key==="model"&&<ModelEditor {...props} showValidation={false} error="" showPreview={props.showPreview!==false&&tab==="model"}/>}
+      {key==="vmti"&&<fieldset disabled={busy}>
+        <label className="uav3d-check"><input type="checkbox" checked={value.showVmtiTargets!==false} onChange={e=>update({showVmtiTargets:e.target.checked})}/>Show VMTI targets</label>
+        <p className="uav3d-map-help">Green: reported boundary or location. Dashed amber: estimated from the frame footprint. Hover for target details.</p>
+      </fieldset>}
+      {key==="frustum"&&<>
+        {[["groundOutline","Footprint"],["rays","Aircraft-to-ground lines"]].map(([styleKey,label])=>{
+          const style={...defaultFrustumStyle[styleKey],...value.frustum?.[styleKey]};
+          const change=patch=>update({frustum:{...value.frustum,[styleKey]:{...style,...patch}}});
+          return <details className="uav3d-section" key={styleKey} open>
+            <summary>{label}</summary><fieldset disabled={busy}>
+              <label>Color<input type="color" aria-label={`${label} color`} value={style.color} onChange={e=>change({color:e.target.value})}/></label>
+              <label>Thickness (pixels)<input type="number" aria-label={`${label} thickness`} min="0.5" max="10" step="0.5" value={style.width} onChange={e=>change({width:e.target.value===""?"":Number(e.target.value)})}/></label>
+              <label className="uav3d-wide">Opacity ({Math.round(style.opacity*100)}%)<input type="range" aria-label={`${label} opacity`} min="0" max="100" value={Math.round(style.opacity*100)} onChange={e=>change({opacity:Number(e.target.value)/100})}/></label>
+            </fieldset>
+          </details>;
+        })}
+        <button type="button" disabled={busy} onClick={()=>update({frustum:{rays:{...defaultFrustumStyle.rays},groundOutline:{...defaultFrustumStyle.groundOutline}}})}>Reset frustum appearance</button>
+      </>}
+    </div>)}
+    {(props.error||presentationError(value))&&<p role="alert">{props.error||presentationError(value)}</p>}
+    {mapConfig&&onMapConfigChange&&<MapEditor value={mapConfig} onChange={onMapConfigChange} busy={busy}/>}
   </div>;
 }

@@ -105,6 +105,21 @@ test("Scene renders ground-only metadata, rejects off-earth footprints, and clea
     scene.upsertPlatforms([{...estimated,...moved,generation:"2",targetFrame:{...targetFrame,key:"5",geometry:moved}}]);
     const entry=scene.platforms.get(platform.id);
     assert.ok(Cartesian3.equals(entry.pose.position,entry.position),"seek snaps rather than easing from the old generation");
+    const second={...estimated,id:"b:258",sourceId:"b",name:"B"};
+    scene.upsertPlatforms([second]);
+    scene.configureModel(platform.id,{preset:"uav",scale:1,showVmtiTargets:false,frustum:{rays:{color:"#ff0000",width:5,opacity:0},groundOutline:{color:"#00ff00",width:7}}});
+    assert.equal(scene.targetStats.active,1,"only B remains when A is hidden while paused");
+    const entities=scene.viewer.entities;
+    assert.equal(entities.getById(`${platform.id}:graphic:line-0`).polyline.width.getValue(),5);
+    assert.equal(entities.getById(`${second.id}:graphic:line-0`).polyline.width.getValue(),1);
+    assert.equal(entities.getById(`${platform.id}:graphic:line-0`).polyline.material.color.getValue().alpha,0);
+    assert.equal(entities.getById(`${platform.id}:graphic:line-5`).polyline.width.getValue(),7);
+    assert.equal(entities.getById(`${platform.id}:graphic:footprint`).polygon.material.color.getValue().green,1);
+    scene.configureModel(platform.id,{preset:"uav",scale:1,showVmtiTargets:true});
+    assert.equal(scene.targetStats.active,2,"A restores from its current metadata without a new packet");
+    scene.configureFrustum({rays:{width:3}});
+    assert.equal(entities.getById(`${second.id}:graphic:line-0`).polyline.width.getValue(),3,"legacy scene-wide style still works");
+    scene.removePlatform(second.id);
     scene.removePlatform(platform.id);assert.equal(scene.targetStats.active,0);assert.equal(scene.targetStats.allocated,0);
     scene.targets.destroy();
   }

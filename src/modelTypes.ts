@@ -3,6 +3,8 @@ export type PresentationPreset = "uav" | "helicopter" | "quadcopter" | "camera";
 export type PresentationAttitude = {heading:number; pitch:number; roll:number};
 export type PresentationPosition = {latitude:number; longitude:number; height:number; reference?:"ellipsoid"|"msl"};
 export type PresentationModel = {
+  showVmtiTargets?:boolean;
+  frustum?:{rays?:Partial<import("./types.js").LineStyle>; groundOutline?:Partial<import("./types.js").LineStyle>};
   preset:PresentationPreset;
   modelAssetId?:string;
   url?:string;
@@ -18,7 +20,8 @@ export type PresentationModel = {
 
 type NumericDraft<T> = {[K in keyof T]: T[K] extends number ? number | "" : T[K]};
 /** Empty numeric fields are valid while editing; validate before saving/rendering. */
-export type PresentationDraft = Omit<NumericDraft<PresentationModel>, "fixedPosition" | "fixedAttitude"> & {
+export type PresentationDraft = Omit<NumericDraft<PresentationModel>, "fixedPosition" | "fixedAttitude" | "frustum"> & {
+  frustum?:{rays?:Partial<NumericDraft<import("./types.js").LineStyle>>; groundOutline?:Partial<NumericDraft<import("./types.js").LineStyle>>};
   fixedPosition?: NumericDraft<PresentationPosition> | null;
   fixedAttitude?: NumericDraft<PresentationAttitude> | null;
 };

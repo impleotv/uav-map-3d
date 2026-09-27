@@ -23,3 +23,23 @@
 .uav3d-preview-canvas {height:100%;}
 .uav3d-preview button {position:absolute; top:8px; right:8px; z-index:1;}
 .uav3d-preview-status {min-height:1.5em; font-size:13px;}
+
+.uav3d-editor [hidden] {display:none!important;}
+.uav3d-tabs {display:flex;gap:4px;border-bottom:1px solid var(--uav3d-border-color,#496176);margin:10px 0 16px;}
+.uav3d-tabs button {flex:1;border-radius:5px 5px 0 0;border-bottom:3px solid transparent;}
+.uav3d-tabs button[aria-selected=true] {border-bottom-color:var(--uav3d-accent-color,#65c9ff);background:var(--uav3d-input-background,#182734);}
+.uav3d-editor :focus-visible {outline:2px solid var(--uav3d-accent-color,#65c9ff);outline-offset:2px;}
+.uav3d-section {margin:12px 0;}
+.uav3d-section>summary {cursor:pointer;font-weight:600;margin-bottom:12px;}
+.uav3d-wide {grid-column:1/-1;}
+.uav3d-actions {display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.uav3d-presentation-panel>select {margin-top:12px;}
+.uav3d-editor .uav3d-folder {margin-top:16px;}
+.uav3d-folder legend {margin-bottom:8px;}
+.uav3d-editor .uav3d-map-token {display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:8px;min-width:0;}
+.uav3d-map-token>input {grid-column:1/-1;}
+.uav3d-map-token>label {min-width:0;}
+.uav3d-map-token .uav3d-map-token-remove {width:30px;height:30px;min-height:30px;padding:5px;}
+.uav3d-map-token .uav3d-map-token-confirm {grid-column:1/-1;}
+.uav3d-editor input[type=color] {height:38px;padding:3px;}
+@media(max-width:420px) {.uav3d-editor fieldset {grid-template-columns:minmax(0,1fr);}}

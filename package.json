@@ -42,7 +42,9 @@
     "CHANGELOG.md",
     "NOTICE.md",
     "REACT.md",
-    "RENDERER.md"
+    "RENDERER.md",
+    "HOWTO.md",
+    "skills/uav-map-3d"
   ],
   "sideEffects": [
     "**/*.css"
@@ -68,6 +70,7 @@
     "@types/react-dom": "^19.3.0",
     "cesium": "1.145.0",
     "conventional-changelog-conventionalcommits": "^10.4.0",
+    "jsdom": "^29.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "release-it": "^21.0.3",

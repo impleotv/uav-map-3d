@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useId} from "react";
 import "./presentation.css";
 
 function TokenRemoval({disabled,onRemove}) {
@@ -24,7 +24,12 @@ export function mapConfigError(value) {
 
 /** @param {import("./types.js").MapEditorProps} props */
 export function MapEditor({value,onChange,busy=false,error=""}) {
-  const updateIon=patch=>onChange({...value,ion:{accessToken:"",...value.ion,...patch}});
+  const tokenId=useId();
+  const updateIon=patch=>{
+    const ion={accessToken:"",...value.ion,...patch};
+    if(patch.accessToken!==undefined&&!patch.accessToken.trim())Object.assign(ion,{worldTerrain:false,osmBuildings:false,bingAerial:false,googlePhotorealistic:false});
+    onChange({...value,ion});
+  };
   const message=error||mapConfigError(value);
   return <details className="uav3d-editor uav3d-map-editor" aria-label="Map content" open>
     <summary>Map content</summary>
@@ -32,10 +37,9 @@ export function MapEditor({value,onChange,busy=false,error=""}) {
       <label className="uav3d-check"><input type="checkbox" checked={!!value.offline} onChange={e=>onChange({...value,offline:e.target.checked})}/>Offline mode</label>
       <p className="uav3d-map-help">Optional online layers require your own Cesium ion token. Leave them unchecked to use the existing map sources.</p>
       <div className="uav3d-map-token">
-      <label>Cesium ion access token
-        <input type="password" autoComplete="off" spellCheck={false} disabled={!!value.offline} value={value.ion?.accessToken??""} onChange={e=>updateIon({accessToken:e.target.value})} placeholder="Paste your token" aria-invalid={!!mapConfigError(value)}/>
-      </label>
-      <TokenRemoval disabled={busy||!value.ion?.accessToken} onRemove={()=>updateIon({accessToken:"",worldTerrain:false,osmBuildings:false,bingAerial:false,googlePhotorealistic:false})}/>
+        <label htmlFor={tokenId}>Cesium ion access token</label>
+        <TokenRemoval disabled={busy||!value.ion?.accessToken} onRemove={()=>updateIon({accessToken:"",worldTerrain:false,osmBuildings:false,bingAerial:false,googlePhotorealistic:false})}/>
+        <input id={tokenId} type="password" autoComplete="off" spellCheck={false} disabled={!!value.offline} value={value.ion?.accessToken??""} onChange={e=>updateIon({accessToken:e.target.value})} placeholder="Paste your token" aria-invalid={!!mapConfigError(value)}/>
       </div>
       {[["worldTerrain","Cesium World Terrain",!!value.terrainUrl],["osmBuildings","Cesium OSM Buildings",false],["bingAerial","Bing Maps Aerial imagery",!!value.imageryUrl],["googlePhotorealistic","Google Photorealistic 3D Tiles",false]].map(([key,label,overridden])=>
         <label className="uav3d-check" key={key}><input type="checkbox" checked={!!value.ion?.[key]} disabled={!!value.offline||overridden} onChange={e=>updateIon({[key]:e.target.checked})}/>{label}{overridden&&" (custom URL takes precedence)"}</label>)}

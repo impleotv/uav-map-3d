@@ -6,6 +6,9 @@ Cesium, and has no React, STView, backend, playback or MISB dependency.
 
 ## Install
 
+For AI-assisted integration, see [Skills](HOWTO.md#skills) for installing the
+library's portable agent skill from GitHub or the bundled package.
+
 ```sh
 npm install github:impleotv/uav-map-3d#v0.2.0 cesium@1.145.0
 ```
