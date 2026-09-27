@@ -93,7 +93,7 @@ for(const example of skillExamples.filter(example=>example.extension==="tsx"))
 writeFileSync(path.join(consumer,"sample/skill-react-main.tsx"),`import {createRoot} from "react-dom/client";
 import {Settings} from "./skill-react-0";
 const root=createRoot(document.getElementById("settings")!);
-root.render(<Settings publicBase={document.baseURI} onSave={() => {}} />);
+root.render(<Settings publicBase={document.baseURI} themeMode="light" onSave={() => {}} />);
 window.addEventListener("pagehide",()=>root.unmount(),{once:true});
 `);
 writeFileSync(path.join(consumer,"sample/skill-react.html"),'<!doctype html><html><head><title>Skill React example</title></head><body><div id="settings"></div><script type="module" src="./skill-react-main.tsx"></script></body></html>');
