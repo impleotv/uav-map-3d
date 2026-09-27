@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.1](https://github.com/impleotv/uav-map-3d/compare/v0.4.0...v0.4.1) (2026-09-27)
+
+### Bug Fixes
+
+* support light and dark configuration themes ([f816473](https://github.com/impleotv/uav-map-3d/commit/f816473d28429737f4db9872f52222f8e6bbc8b1))
+
+### Maintenance
+
+* update HOWTO ([3bbcb40](https://github.com/impleotv/uav-map-3d/commit/3bbcb40df77630eab65156b190a40a4994040d78))
+
+### Tests
+
+* provide host theme in packaged skill example ([ecb71de](https://github.com/impleotv/uav-map-3d/commit/ecb71de96d1c886aa646feca37aebda8c1de84bf))
+
 ## [0.4.0](https://github.com/impleotv/uav-map-3d/compare/v0.2.0...v0.4.0) (2026-09-27)
 
 ### Features
