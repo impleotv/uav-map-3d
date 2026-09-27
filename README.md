@@ -10,7 +10,7 @@ For AI-assisted integration, see [Skills](HOWTO.md#skills) for installing the
 library's portable agent skill from GitHub or the bundled package.
 
 ```sh
-npm install github:impleotv/uav-map-3d#v0.2.0 cesium@1.145.0
+npm install github:impleotv/uav-map-3d#v0.4.0 cesium@1.145.0
 ```
 
 The package name is `@impleotv-pm/uav-map-3d`. Git installs compile the source
