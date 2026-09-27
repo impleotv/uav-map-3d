@@ -116,6 +116,18 @@ Run `npm run sample` and open `/presentation.html` for the independent example.
 
 ## Shared presentation and configuration panels
 
+All editors support light and dark schemes. Put `data-uav3d-theme="light"` or
+`data-uav3d-theme="dark"` on a wrapper around the editor, and update it when the
+host application's theme changes. Nested editors inherit the palette. Without
+a wrapper the editor retains its default dark appearance. The attribute also
+sets the native control color scheme; selects and their options use explicit
+foreground/background colors for Linux webviews.
+
+The palette can be customized with `--uav3d-text-color`, `--uav3d-muted-color`,
+`--uav3d-surface-background`, `--uav3d-input-background`,
+`--uav3d-button-background`, `--uav3d-border-color`, and `--uav3d-accent-color`.
+The presentation sample includes a live scheme selector.
+
 `PresentationEditor` now renders **Model**, **VMTI**, and **Frustum** tabs. Model
 opens first; the preview exists only while that tab is active. Frustum contains
 independent **Footprint** and **Aircraft-to-ground lines** sections (initially

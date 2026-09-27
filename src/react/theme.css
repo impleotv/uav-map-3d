@@ -1,0 +1,54 @@
+/* Set data-uav3d-theme on an editor or any ancestor. Nested editors inherit it. */
+[data-uav3d-theme="dark"] {
+  color-scheme: dark;
+  --uav3d-color-scheme: dark;
+  --uav3d-text-color: #e8eef5;
+  --uav3d-muted-color: #a8bdce;
+  --uav3d-surface-background: #1c2937;
+  --uav3d-input-background: #182734;
+  --uav3d-button-background: #263d50;
+  --uav3d-border-color: #496176;
+  --uav3d-accent-color: #65c9ff;
+}
+[data-uav3d-theme="light"] {
+  color-scheme: light;
+  --uav3d-color-scheme: light;
+  --uav3d-text-color: #202d3b;
+  --uav3d-muted-color: #506477;
+  --uav3d-surface-background: #f5f7fa;
+  --uav3d-input-background: #ffffff;
+  --uav3d-button-background: #e4ebf2;
+  --uav3d-border-color: #8497a8;
+  --uav3d-accent-color: #006da8;
+}
+.uav3d-editor.uav3d-editor {
+  color: var(--uav3d-text-color, #e8eef5);
+  background-color: var(--uav3d-surface-background, #1c2937);
+  color-scheme: var(--uav3d-color-scheme, dark);
+}
+.uav3d-editor.uav3d-editor input:not([type=checkbox]),
+.uav3d-editor.uav3d-editor select,
+.uav3d-editor.uav3d-editor option,
+.uav3d-editor.uav3d-editor optgroup {
+  color: var(--uav3d-text-color, #e8eef5);
+  background-color: var(--uav3d-input-background, #182734);
+}
+/* Native GTK select rendering may ignore the background while retaining text. */
+.uav3d-editor.uav3d-editor select {
+  appearance: none;
+  padding-right: 30px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.uav3d-editor.uav3d-editor button, .uav3d-preview button {
+  color: var(--uav3d-text-color, #e8eef5);
+  background-color: var(--uav3d-button-background, #263d50);
+}
+.uav3d-editor.uav3d-editor p,
+.uav3d-editor.uav3d-editor input::placeholder {
+  color: var(--uav3d-muted-color, #a8bdce);
+}
+.uav3d-editor input[type=checkbox] {accent-color: var(--uav3d-accent-color, #65c9ff);}
+.uav3d-editor :is(input,select):disabled {opacity: .6; cursor: default;}

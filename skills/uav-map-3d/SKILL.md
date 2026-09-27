@@ -30,7 +30,7 @@ assume a planned release exists or upgrade dependencies without the user's inten
   read [Platforms and targets](references/platforms-and-targets.md).
 - For terrain, imagery, ion content, and offline behavior, read
   [Map configuration](references/map-configuration.md).
-- For controlled configuration forms and model previews, read
+- For controlled configuration forms, light/dark themes, and model previews, read
   [React integration](references/react.md).
 
 Read only the references needed for the task. Their examples use public imports

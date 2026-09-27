@@ -1,3 +1,4 @@
+@import "./theme.css";
 .uav3d-editor {color:inherit; min-width:0;}
 .uav3d-map-editor {margin-top:16px;}
 .uav3d-map-editor>summary {cursor:pointer; font-weight:600;}

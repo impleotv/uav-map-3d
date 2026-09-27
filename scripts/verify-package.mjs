@@ -26,6 +26,7 @@ for(const name of ["HOWTO.md",...skillDocs.map(name=>`${skillRoot}/${name}`)])
   assert.ok(names.has(name),`Missing packed skill/documentation file ${name}`);
 assert.ok(names.has("CHANGELOG.md"), "Missing packed CHANGELOG.md");
 assert.ok(names.has("dist/react/MapEditor.js"), "Missing packed MapEditor");
+assert.ok(names.has("dist/react/theme.css"), "Missing packed editor theme stylesheet");
 for(const name of ["dist/react/index.js","dist/react/index.d.ts","dist/react/PresentationEditor.js","dist/react/ModelPreview.js","dist/react/types.d.ts","dist/react/presentation.css","dist/index.js","dist/index.d.ts","dist/models.d.mts","dist/orientation.d.mts","dist/vite.mjs","dist/vite.d.mts","dist/styles.css","assets/geoid/NOTICE.txt","assets/geoid/egm96_15.gtx","NOTICE.md"])
   assert.ok(names.has(name),`Missing packed file ${name}`);
 assert.ok(![...names].some(name=>name.startsWith("src/") || name.startsWith("test/")));

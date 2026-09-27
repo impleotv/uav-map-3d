@@ -17,14 +17,15 @@ import {PresentationEditor, MapEditor, mapConfigError,
   type PresentationDraft} from "@impleotv-pm/uav-map-3d/react";
 import {presentationDefaults, presentationError} from "@impleotv-pm/uav-map-3d/models";
 
-export function Settings({publicBase, onSave}: {
+export function Settings({publicBase, themeMode, onSave}: {
   publicBase: string;
+  themeMode: "light" | "dark";
   onSave: (presentation: PresentationDraft, map: MapConfig) => void;
 }) {
   const [presentation, setPresentation] = useState<PresentationDraft>({...presentationDefaults});
   const [map, setMap] = useState<MapConfig>({offline: true});
   const error = presentationError(presentation) || mapConfigError(map);
-  return <section>
+  return <section data-uav3d-theme={themeMode}>
     <PresentationEditor value={presentation} onChange={setPresentation}
       assetBaseUrl={new URL("scene/", publicBase).href}
       cesiumBaseUrl={new URL("cesium/", publicBase).href}
@@ -48,6 +49,39 @@ The editor emits complete new drafts. The host owns file selection, upload,
 storage, and authenticated URLs. Supply `models`, `modelURL`, and `onImport` when
 supporting custom models; omit `onImport` to hide Upload. IDs are opaque host
 identifiers. Release host-created object URLs when no longer needed.
+
+## Light and dark schemes
+
+For revisions that include the theme stylesheet, set `data-uav3d-theme="light"`
+or `data-uav3d-theme="dark"` on a wrapper around the shared controls, as above.
+Nested editors inherit the palette; without a themed wrapper they default to
+dark. This is a DOM attribute on the wrapper, not a React editor prop. Follow
+the host application's selected scheme rather than inferring it independently
+from the operating system.
+
+Detached windows and iframes need the scheme at initialization and on subsequent
+host theme changes, including while playback is paused. Pass it through the
+host's existing trusted window bridge. React portals such as upload dialogs
+need their own host theme context or styling because CSS variables follow DOM
+ancestry rather than the React tree.
+
+Customize the palette with `--uav3d-text-color`, `--uav3d-muted-color`,
+`--uav3d-surface-background`, `--uav3d-input-background`,
+`--uav3d-button-background`, `--uav3d-border-color`, and `--uav3d-accent-color`.
+Preserve the stylesheet's native `color-scheme`, explicit foreground/background
+colors for selects and options, and custom select appearance. Host toolbar
+controls outside the editor need equivalent styling: Linux native dropdowns
+can otherwise mix a light background with pale text.
+
+Check the installed CSS as well as declarations: older packages can share the
+same version number without these theme rules. The attribute alone cannot add
+support to such a package. If retaining an older pin, a scoped stylesheet
+backport can supply the theme rules without copying the React components; keep
+it synchronized with the shared stylesheet until the dependency is upgraded.
+
+Verify both schemes, disabled controls, focus indicators, and dropdown options
+in the consuming UI. Browser checks on Windows do not establish native Linux
+webview coverage.
 
 ## Preview and scene lifecycle
 
