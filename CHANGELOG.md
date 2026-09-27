@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0](https://github.com/impleotv/uav-map-3d/compare/v0.2.0...v0.4.0) (2026-09-27)
+
+### Features
+
+* Add skills ([ca9f342](https://github.com/impleotv/uav-map-3d/commit/ca9f3429d867efd8de52037df1db6ef73f8e48a5))
+
+### Maintenance
+
+* Add ion token ([47918a8](https://github.com/impleotv/uav-map-3d/commit/47918a8a8264471eae4583b24e41b64a70505bb1))
+
+### Documentation
+
+* prepare skills release and preserve release history ([1d5c1c9](https://github.com/impleotv/uav-map-3d/commit/1d5c1c940c3b569575a8abefa7131e9524dab827))
+
 ## [0.3.0](https://github.com/impleotv/uav-map-3d/compare/v0.2.0...v0.3.0) (2026-09-26)
 
 ### Features
