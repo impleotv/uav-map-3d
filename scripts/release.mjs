@@ -10,7 +10,13 @@ try {
     throw new Error("Usage: npm run release -- [major|minor|patch|X.Y.Z] [--preview]");
   }
   if (!preview) {
-    if (!process.env.GITHUB_TOKEN) throw new Error("Set GITHUB_TOKEN with repository contents write access before publishing.");
+    if (!process.env.GITHUB_TOKEN) {
+      const auth = spawnSync("gh", ["auth", "token"], {encoding: "utf8"});
+      if (auth.status !== 0 || !auth.stdout?.trim()) {
+        throw new Error("Sign in with `gh auth login`, or set GITHUB_TOKEN with repository contents write access before publishing.");
+      }
+      process.env.GITHUB_TOKEN = auth.stdout.trim();
+    }
     const status = spawnSync("git", ["status", "--porcelain"], {encoding: "utf8"});
     if (status.status !== 0) throw new Error("Unable to inspect Git working tree.");
     if (status.stdout.trim()) throw new Error("Commit or stash all changes (including untracked files) before releasing.");

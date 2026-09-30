@@ -180,9 +180,9 @@ its normal CMake build runs `npm ci` as well. Do not commit a local file depende
 
 Releases use [release-it](https://github.com/release-it/release-it) and its
 [Conventional Changelog plugin](https://github.com/release-it/conventional-changelog).
-Install dependencies with `npm ci`, and have GNU Make and Git available. Set
-`GITHUB_TOKEN` in your environment to a token with repository contents write
-access, and configure Git credentials for pushing. Commit your changes on a
+Install dependencies with `npm ci`, and have GNU Make and Git available. Sign in
+once with `gh auth login` (or set `GITHUB_TOKEN` to a token with repository
+contents write access), and configure Git credentials for pushing. Commit your changes on a
 branch with an upstream, then run:
 
 ```sh
