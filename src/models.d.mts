@@ -5,3 +5,4 @@ export declare function presentationName(config: Partial<PresentationModel> | nu
 export declare function resolvePresentation(...layers: (Partial<PresentationModel> | null | undefined)[]): PresentationModel;
 export declare function presentationError(value: PresentationDraft): string;
 export declare function modelUrl(config: Pick<PresentationModel,"preset"|"url">, assetBaseUrl: string): string;
+export {defaultTargetStyle, normalizeTargetStyle} from "./targetStyle.mjs";

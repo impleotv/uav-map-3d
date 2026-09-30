@@ -48,6 +48,7 @@ const platform: Platform = {
   attitude:{heading:90,pitch:0,roll:0},
   sensor:{heading:0,pitch:-60,roll:0},
   fov:{horizontal:35,vertical:25},frameCenter:null,range:null,
+  targetLocation:{latitude:32,longitude:34.806,height:125,reference:"msl"},
 };
 scene.upsertPlatforms([platform]);
 scene.select(platform.id);
@@ -61,6 +62,10 @@ or creating a viewer. Renderer construction requires a browser with WebGL.
 Call `scene.viewer.resize()` after changing container dimensions.
 
 `upsertPlatforms` adds or updates supplied IDs; it does not remove omitted IDs.
+`targetLocation` is the normalized MISB ST 0601 tags 40–42 location. It draws a
+default-enabled red crosshair and dashed line from the platform. Use
+`configureModel(id, {...presentation, showTarget:false})` to hide it, or set
+`targetStyle` to change its shared color, line width, and crosshair size.
 Call `removePlatform(id)` or `resetSource(sourceId)` explicitly. Each Scene owns
 its platforms and selection. Multiple viewers in one page must use the same
 `cesiumBaseUrl`, because Cesium's resource base is process-wide.

@@ -66,6 +66,7 @@ const update=()=>{
   for(const [i,platform] of platforms.entries()) {
     const lat=platform.position!.latitude,lon=platform.position!.longitude;
     const corner=(x:number,y:number)=>({latitude:lat+y*0.001,longitude:lon+x*0.001});
+    if(i===0)platform.targetLocation={...corner(0.5,0.5),height:0,reference:"ellipsoid"};
     platform.frameCorners=[corner(-2,2),corner(2,2),corner(1,-2),corner(-1,-2)];
     const targets:Target[]=Array.from({length:50},(_,j)=>{
       const left=0.05+(j%10)*0.09,top=0.05+Math.floor(j/10)*0.18;

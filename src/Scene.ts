@@ -5,7 +5,7 @@ import {
   Ellipsoid, Ray, IntersectionTests, PerspectiveFrustum,
   HeadingPitchRange, Math as CesiumMath, buildModuleUrl,
   GeographicTilingScheme, WebMercatorTilingScheme, Model,
-  IonResource, IonImageryProvider, IonWorldImageryStyle, Cesium3DTileset,
+  IonResource, IonImageryProvider, IonWorldImageryStyle, Cesium3DTileset, PolylineDashMaterialProperty,
 } from "cesium";
 import { sensorGroundGeometry, groundOutlineSegments } from "./ground.mjs";
 import { sceneAxes } from "./math.mjs";
@@ -19,11 +19,12 @@ import { smoothPlatformPose } from "./platformMotion.mjs";
 import { smoothGroundGeometry, equalGroundGeometry } from "./groundMotion.mjs";
 import { readGeoidGrid } from "./geoid.mjs";
 import { TargetLayer } from "./TargetLayer.mjs";
+import { normalizeTargetStyle, targetCrosshairImage } from "./targetStyle.mjs";
 import type { Platform, ModelConfig, SceneOptions, MapConfig, CameraMode, Position, GroundPosition, FrustumStyle, LineStyle } from "./types.js";
 
 type PlatformPose = {position: Cartesian3; orientation?: Quaternion};
 type GroundGeometry = {center?: Cartesian3; corners: (Cartesian3 | undefined)[]};
-type Entry = { data: Platform; config: ModelConfig; model: Entity; graphics: Entity[]; lines: Cartesian3[][]; rays?: Cartesian3[][]; pose?: PlatformPose; targetOrientation?: Quaternion; ground?: GroundGeometry; targetGround?: GroundGeometry; projectGround?: (point: Cartesian3) => Cartesian3; footprint?: Cartesian3[]; sensor?: { direction: Cartesian3; up: Cartesian3; right: Cartesian3 }; position?: Cartesian3; sensorPosition?: Cartesian3 };
+type Entry = { data: Platform; config: ModelConfig; model: Entity; graphics: Entity[]; lines: Cartesian3[][]; rays?: Cartesian3[][]; pose?: PlatformPose; targetOrientation?: Quaternion; ground?: GroundGeometry; targetGround?: GroundGeometry; projectGround?: (point: Cartesian3) => Cartesian3; footprint?: Cartesian3[]; targetPoint?: Cartesian3; sensor?: { direction: Cartesian3; up: Cartesian3; right: Cartesian3 }; position?: Cartesian3; sensorPosition?: Cartesian3 };
 const defaults: ModelConfig = presentationDefaults as ModelConfig;
 const radians = CesiumMath.toRadians;
 
@@ -107,7 +108,7 @@ export class Scene {
       this.geoid = readGeoidGrid(buffer);
       this.targets?.invalidateSurface();
       for (const entry of this.platforms.values()) this.render(entry);
-      if (!this.initialFramed && [...this.platforms.values()].some(entry=>entry.position)) {
+      if (!this.initialFramed && [...this.platforms.values()].some(entry=>entry.position||entry.targetPoint)) {
         this.initialFramed = true;
         this.select(this.platforms.keys().next().value ?? null);
         this.fitAll();
@@ -134,6 +135,14 @@ export class Scene {
     return Cartesian3.fromDegrees(p.longitude,p.latitude,height);
   }
 
+  private targetLocationPosition(location: GroundPosition): Cartesian3 | undefined {
+    if(!Number.isFinite(location.latitude)||!Number.isFinite(location.longitude)||Math.abs(location.latitude)>90||Math.abs(location.longitude)>180)return;
+    if(location.height!==undefined)return this.worldPosition(location);
+    const p=Cartographic.fromDegrees(location.longitude,location.latitude);
+    const terrainHeight=this.viewer.scene.globe.getHeight(p);
+    return Cartesian3.fromRadians(p.longitude,p.latitude,(typeof terrainHeight==="number"&&Number.isFinite(terrainHeight)?terrainHeight:0)+0.5);
+  }
+
   upsertPlatforms(platforms: Platform[]) {
     for (const data of platforms) {
       if (!data.id || !data.sourceId) continue;
@@ -150,7 +159,7 @@ export class Scene {
       this.render(entry);
     }
     this.viewer.scene.requestRender();
-    if (!this.initialFramed && ([...this.platforms.values()].some(entry=>entry.position)||(this.targets?.stats.active??0)>0)) {
+    if (!this.initialFramed && ([...this.platforms.values()].some(entry=>entry.position||entry.targetPoint)||(this.targets?.stats.active??0)>0)) {
       this.initialFramed = true;
       this.select(platforms[0]?.id ?? null);
       this.fitAll();
@@ -160,11 +169,13 @@ export class Scene {
   configureModel(id: string, config: ModelConfig) {
     const entry = this.platforms.get(id); if (!entry) return;
     if(config.showVmtiTargets!==undefined&&typeof config.showVmtiTargets!=="boolean")throw new Error("Target visibility must be a boolean");
+    if(config.showTarget!==undefined&&typeof config.showTarget!=="boolean")throw new Error("Show Target must be a boolean");
     if(config.frustum)normalizeFrustumStyle(config.frustum);
+    if(config.targetStyle)normalizeTargetStyle(config.targetStyle);
     entry.config = {...defaults,...config}; this.render(entry);
     // A configured stationary position may be the first usable position,
     // including when reopening after the geoid grid has already loaded.
-    if (!this.initialFramed && entry.position) {
+    if (!this.initialFramed && (entry.position||entry.targetPoint)) {
       this.initialFramed = true;
       this.select(id);
       this.fitAll();
@@ -300,7 +311,37 @@ export class Scene {
     if(this.mode==="sensor"&&this.selected===data.id)model.show=false;
     this.viewer.scene.requestRender();
     } finally {
+      this.renderTargetLocation(entry);
       this.renderTargets(entry);
+    }
+  }
+
+  private renderTargetLocation(entry: Entry) {
+    const {data,config} = entry;
+    const markerId=`${data.id}:graphic:target-crosshair`,lineId=`${data.id}:graphic:target-line`;
+    const marker=this.viewer.entities.getById(markerId),line=this.viewer.entities.getById(lineId);
+    entry.targetPoint=undefined;
+    if(marker)marker.show=false;
+    if(line)line.show=false;
+    this.viewer.scene.requestRender();
+    const location=data.targetLocation;
+    if(!location||data.stale||config.visible===false||config.showTarget===false) return;
+    const point=this.targetLocationPosition(location);
+    if(!point)return;
+    const style=normalizeTargetStyle(config.targetStyle);
+    entry.targetPoint=point;
+    const targetMarker=marker??this.viewer.entities.add({id:markerId});
+    if(!marker)entry.graphics.push(targetMarker);
+    targetMarker.position=new ConstantPositionProperty(point);
+    targetMarker.billboard={image:targetCrosshairImage(style),width:style.crosshairSize,height:style.crosshairSize} as any;
+    targetMarker.show=true;
+    if(entry.pose) {
+      const targetLine=line??this.viewer.entities.add({id:lineId,polyline:{positions:new CallbackProperty(()=>entry.pose&&entry.targetPoint?[entry.pose.position,entry.targetPoint]:[],false)}});
+      if(!line)entry.graphics.push(targetLine);
+      targetLine.polyline!.width=new ConstantProperty(style.width);
+      targetLine.polyline!.material=new PolylineDashMaterialProperty({color:Color.fromCssColorString(style.color),dashLength:16});
+      targetLine.polyline!.arcType=new ConstantProperty(ArcType.NONE);
+      targetLine.show=true;
     }
   }
 

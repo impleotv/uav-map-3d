@@ -55,6 +55,22 @@ Ground positions (`frameCenter` and `frameCorners`) may omit `height`; their
 latitude/longitude still supplies a displayed ground location. These positions
 do not imply a known elevation or a complete sensor orientation.
 
+`targetLocation` independently carries the normalized MISB ST 0601 tags 40–42
+crosshair location. It is not inferred from `frameCenter` or VMTI detections.
+The host supplies `reference:"msl"` or `"ellipsoid"` for a reported height;
+the renderer uses that 3D height and requires the geoid grid for MSL. Without
+height, it places the crosshair on the loaded terrain or ellipsoid. Valid target
+coordinates can show a marker without a platform position; the dashed connecting
+line appears when a platform position is available. Hidden, stale, invalid, or
+removed targets leave no displayed target graphics.
+
+`configureModel(id, config)` accepts `showTarget` (default true) and partial
+`targetStyle`. Color (`#RRGGBB`, default `#ff0000`) applies to both graphics;
+line width defaults to 2 pixels and accepts 0.5–10; crosshair size defaults to
+24 screen pixels and accepts 8–128. The crosshair stroke stays 2 pixels.
+`defaultTargetStyle` and `normalizeTargetStyle` are exported from the root and
+`/models` entries. The editor offers these settings in its Target tab.
+
 `configureFrustum({rays, groundOutline})` updates all existing and future platform
 lines without resetting telemetry. Each style accepts `color` (`#RRGGBB`), `width`
 (0.5–10 pixels), and `opacity` (0–1). Omitted values use defaults; invalid values

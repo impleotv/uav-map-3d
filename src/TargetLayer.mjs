@@ -91,7 +91,9 @@ export class TargetLayer {
       const detail={vmti:true,key,targetId:target.id,source:state.source,description:placement.description};
       item.line.id=detail;item.point.id=detail;
       if(item.estimated!==placement.estimated) {
-        item.line.material=Material.fromType(placement.estimated?"PolylineDash":"Color",{color:placement.estimated?amber:green});
+        item.line.material=placement.estimated
+          ?Material.fromType("PolylineDash",{color:amber,dashLength:4})
+          :Material.fromType("Color",{color:green});
         item.point.color=placement.estimated?amber:green;item.estimated=placement.estimated;
       }
       item.line.show=placement.closed;item.point.show=!placement.closed;

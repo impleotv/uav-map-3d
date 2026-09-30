@@ -14,6 +14,7 @@ export function updateAircraft(scene: Scene) {
     sensor: {heading: 0, pitch: -60, roll: 0},
     fov: {horizontal: 35, vertical: 25},
     frameCenter: {latitude: 32, longitude: 34.806}, range: null,
+    targetLocation: {latitude: 32.001, longitude: 34.805, height: 120, reference: "msl"},
   };
   platform.targetFrame = {
     key: "frame-1",
@@ -53,6 +54,11 @@ detections and present them as fresh input.
 - Target center/boundary can be geographic. Image-space boxes and centroids use
   unit UV coordinates, not raw pixel counts. Normalize using the source dimensions.
   Supply matching frame geometry for projection; do not invent missing corners.
+- `targetLocation` is the distinct ST 0601 tags 40–42 crosshair location, not
+  `frameCenter` (23–25) or a VMTI detection. Supply validated latitude/longitude
+  and any reported height with its correct `reference`. When height is missing,
+  omit it; the marker uses the visible map surface. An unavailable platform
+  position still allows the marker, but not its connecting line.
 - Terrain and ellipsoid intersections are approximations; building roofs and
   photorealistic tile meshes are not the sensor projection surface.
 
@@ -69,10 +75,18 @@ it. Sensor mode needs valid sensor geometry; `zoomSensor(factor)` and
 
 `configureModel(id, config)` applies presentation. Use `/models` defaults and
 validation instead of rebuilding defaults. In versions supporting per-platform
-`showVmtiTargets` and `frustum`, resolve legacy scene settings, global presentation,
-source settings, and platform settings in that order with `resolvePresentation`.
+`showVmtiTargets`, `showTarget`, `targetStyle`, and `frustum`, resolve legacy scene
+settings, global presentation, source settings, and platform settings in that
+order with `resolvePresentation`.
 Missing fields inherit, while explicit false and zero must survive. The host
 resolves custom model URLs and owns `modelAssetId` identifiers.
+
+`showTarget` defaults to true and is independent of `showVmtiTargets`.
+`targetStyle` accepts partial `color` (six-digit hex, red by default), `width`
+(0.5–10 pixels, default 2) and `crosshairSize` (8–128 screen pixels, default
+24). The color applies to the crosshair and dashed platform-to-target line.
+Use `defaultTargetStyle` and `normalizeTargetStyle` from the public package
+exports for host defaults and validation.
 
 Scene-wide `configureTargets({visible})` and `configureFrustum(...)` are also
 available. Avoid using a global visibility gate to undo resolved per-platform

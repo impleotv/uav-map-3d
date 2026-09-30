@@ -32,7 +32,18 @@ test("shared editors retain tab drafts, validate hidden fields and own preview l
     // Allow the lazy module to finish without relying on a renderer or network.
     for(let i=0;i<20&&!document.querySelector("[data-preview]");i++)await act(async()=>{await new Promise(resolve=>setTimeout(resolve,10));});
     assert.equal(globalThis.previewLifecycle.mounts,1);
-    assert.deepEqual([...document.querySelectorAll('[role="tab"]')].map(node=>node.textContent),["Model","VMTI","Frustum"]);
+    assert.deepEqual([...document.querySelectorAll('[role="tab"]')].map(node=>node.textContent),["Model","Target","VMTI","Frustum"]);
+    await click(button("Target"));
+    await click(document.querySelector('[role="tabpanel"]:not([hidden]) input[type="checkbox"]'));
+    assert.equal(value.showTarget,false);
+    await input(document.querySelector('[aria-label="Target crosshair size"]'),"");
+    assert.match(document.querySelector('[role="alert"]').textContent,/crosshair size/);
+    await click(button("VMTI"));
+    assert.match(document.querySelector('[role="alert"]').textContent,/crosshair size/);
+    await click(button("Target"));
+    await click(button("Reset target appearance"));
+    assert.equal(value.targetStyle.crosshairSize,24);
+    assert.equal(value.showTarget,false);
     await click(button("VMTI"));
     assert.equal(globalThis.previewLifecycle.unmounts,1);
     assert.equal(document.querySelector("[data-preview]"),null);

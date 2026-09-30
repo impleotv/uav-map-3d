@@ -70,7 +70,7 @@ CSS, JSON, and WASM with appropriate MIME types, and retain third-party notices.
 
 ## Public entry points
 
-- Root: `Scene`, input/configuration types, frustum style helpers.
+- Root: `Scene`, input/configuration types, frustum and target style helpers.
 - `/models`: model presets, defaults, validation, and presentation resolution;
   this entry does not load Cesium.
 - `/orientation`: model orientation helper for host-owned Cesium previews.

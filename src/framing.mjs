@@ -4,10 +4,13 @@ import { BoundingSphere } from "cesium";
 export function sceneBounds(entries, extraPoints = []) {
   const points = [...extraPoints];
   for (const entry of entries) {
-    if (entry.config.visible === false || !entry.position) continue;
-    points.push(entry.position);
-    for (const line of entry.lines) points.push(...line);
-    if (entry.footprint) points.push(...entry.footprint);
+    if (entry.config.visible === false) continue;
+    if (entry.targetPoint) points.push(entry.targetPoint);
+    if (entry.position) {
+      points.push(entry.position);
+      for (const line of entry.lines) points.push(...line);
+      if (entry.footprint) points.push(...entry.footprint);
+    }
   }
   return points.length ? BoundingSphere.fromPoints(points) : undefined;
 }

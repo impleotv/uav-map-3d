@@ -51,6 +51,7 @@ and require no library source checkout or other installed skills.
 
 Use the installed declarations as authority when an example or newer option
 differs. In particular, `PresentationPanel`, `SceneConfigEditor`, and per-platform
-`showVmtiTargets`/`frustum` settings must be checked before use in older releases.
+`showVmtiTargets`/`frustum`/`showTarget`/`targetStyle` settings and
+`Platform.targetLocation` must be checked before use in older releases.
 Do not import private source modules or copy the renderer/editor implementation
 into the consuming application.

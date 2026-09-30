@@ -2,6 +2,7 @@ import React, {lazy, Suspense, useId, useState} from "react";
 import {presentationPresets, presentationError} from "../models.mjs";
 import "./presentation.css";
 import {defaultFrustumStyle} from "../frustumStyle.mjs";
+import {defaultTargetStyle} from "../targetStyle.mjs";
 import {MapEditor} from "./MapEditor.js";
 const ModelPreview = lazy(()=>import("./ModelPreview.js"));
 
@@ -45,11 +46,13 @@ export function ModelEditor({value, models=[], modelURL="", assetBaseUrl, cesium
 export function PresentationEditor(props) {
   const [tab,setTab]=useState("model"), id=useId();
   const {value,onChange,busy=false,mapConfig,onMapConfigChange}=props;
-  const tabs=[["model","Model"],["vmti","VMTI"],["frustum","Frustum"]];
+  const tabs=[["model","Model"],["target","Target"],["vmti","VMTI"],["frustum","Frustum"]];
   const update=patch=>onChange({...value,...patch});
+  const targetStyle={...defaultTargetStyle,...value.targetStyle};
+  const changeTargetStyle=patch=>update({targetStyle:{...targetStyle,...patch}});
   const keyboard=event=>{
     const current=tabs.findIndex(([key])=>key===tab);
-    const index=event.key==="Home"?0:event.key==="End"?2:event.key==="ArrowRight"?(current+1)%3:event.key==="ArrowLeft"?(current+2)%3:null;
+    const index=event.key==="Home"?0:event.key==="End"?tabs.length-1:event.key==="ArrowRight"?(current+1)%tabs.length:event.key==="ArrowLeft"?(current+tabs.length-1)%tabs.length:null;
     if(index===null)return;
     event.preventDefault();setTab(tabs[index][0]);
     event.currentTarget.querySelectorAll('[role="tab"]')[index].focus();
@@ -60,6 +63,14 @@ export function PresentationEditor(props) {
     </div>
     {tabs.map(([key])=><div key={key} role="tabpanel" id={`${id}-${key}`} aria-labelledby={`${id}-${key}-tab`} hidden={tab!==key} tabIndex={0}>
       {key==="model"&&<ModelEditor {...props} showValidation={false} error="" showPreview={props.showPreview!==false&&tab==="model"}/>}
+      {key==="target"&&<fieldset disabled={busy}>
+        <label className="uav3d-check"><input type="checkbox" checked={value.showTarget!==false} onChange={e=>update({showTarget:e.target.checked})}/>Show Target</label>
+        <p className="uav3d-map-help">MISB ST 0601 target location (tags 40–42). The crosshair and dashed line use the same color.</p>
+        <label>Color<input type="color" aria-label="Target color" value={targetStyle.color} onChange={e=>changeTargetStyle({color:e.target.value})}/></label>
+        <label>Line thickness (pixels)<input type="number" aria-label="Target line thickness" min="0.5" max="10" step="0.5" value={targetStyle.width} onChange={e=>changeTargetStyle({width:e.target.value===""?"":Number(e.target.value)})}/></label>
+        <label>Crosshair size (pixels)<input type="number" aria-label="Target crosshair size" min="8" max="128" step="1" value={targetStyle.crosshairSize} onChange={e=>changeTargetStyle({crosshairSize:e.target.value===""?"":Number(e.target.value)})}/></label>
+        <button type="button" disabled={busy} onClick={()=>update({targetStyle:{...defaultTargetStyle}})}>Reset target appearance</button>
+      </fieldset>}
       {key==="vmti"&&<fieldset disabled={busy}>
         <label className="uav3d-check"><input type="checkbox" checked={value.showVmtiTargets!==false} onChange={e=>update({showVmtiTargets:e.target.checked})}/>Show VMTI targets</label>
         <p className="uav3d-map-help">Green: reported boundary or location. Dashed amber: estimated from the frame footprint. Hover for target details.</p>

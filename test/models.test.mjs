@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {presentationDefaults,resolvePresentation,presentationError} from "../dist/models.mjs";
+import {defaultTargetStyle,normalizeTargetStyle} from "../dist/targetStyle.mjs";
 test("presentation inheritance preserves explicit values and supports reset",()=>{
   const global={preset:"helicopter",scale:2}, source={preset:"quadcopter",scale:3};
   const track={preset:"camera",scale:1,visible:false,fixedPosition:null};
@@ -32,4 +33,21 @@ test("platform appearance inherits nested values without losing false or zero",(
   assert.equal(legacy.frustum.rays.width,2);
   for(const patch of [{showVmtiTargets:"yes"},{frustum:{rays:{width:""}}},{frustum:{rays:{opacity:2}}},{frustum:{groundOutline:{color:"bad"}}}])assert.ok(presentationError(resolvePresentation(patch)));
   assert.equal(presentationError(resolvePresentation(legacy,source,platform)),"");
+});
+
+test("Show Target defaults, partial inheritance, and validation",()=>{
+  assert.deepEqual(normalizeTargetStyle(),defaultTargetStyle);
+  assert.deepEqual(defaultTargetStyle,{color:"#ff0000",width:2,crosshairSize:24});
+  const source={showTarget:false,targetStyle:{color:"#112233",width:4}};
+  const track={showTarget:true,targetStyle:{crosshairSize:36}};
+  const result=resolvePresentation(source,track);
+  assert.equal(resolvePresentation().showTarget,true);
+  assert.equal(resolvePresentation(source).showTarget,false);
+  assert.equal(result.showTarget,true);
+  assert.deepEqual(result.targetStyle,{color:"#112233",width:4,crosshairSize:36});
+  result.targetStyle.width=6;
+  assert.equal(source.targetStyle.width,4);
+  for(const patch of [{showTarget:"yes"},{targetStyle:{color:"red"}},{targetStyle:{width:""}},{targetStyle:{width:0}},{targetStyle:{width:11}},{targetStyle:{crosshairSize:7}},{targetStyle:{crosshairSize:129}}])
+    assert.ok(presentationError(resolvePresentation(patch)),JSON.stringify(patch));
+  assert.equal(presentationError(resolvePresentation({showTarget:false,targetStyle:{width:0.5,crosshairSize:128}})),"");
 });

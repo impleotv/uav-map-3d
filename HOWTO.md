@@ -1,5 +1,13 @@
 # How to use UAV Map 3D
 
+
+## Release
+
+```sh
+make release-preview
+make release
+```
+
 ## Skills
 
 The library includes a portable `uav-map-3d` [Agent Skill](https://agentskills.io/specification)

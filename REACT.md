@@ -29,6 +29,12 @@ expresses that state. Use `presentationError(draft)` before applying or saving
 a draft. A valid `PresentationModel` remains compatible with the editor.
 An invalid draft leaves the last valid preview intact while showing the error.
 
+The Target tab controls the MISB ST 0601 target-location overlay separately
+from VMTI detections. `showTarget` defaults to true. `targetStyle` changes the
+shared crosshair/line color, dashed-line thickness, and crosshair size in screen
+pixels. These values are controlled presentation settings; the host persists
+them and supplies normalized `Platform.targetLocation` data.
+
 ## Optional map content settings
 
 Include `MapEditor` in the host's configuration dialog, or pass `mapConfig`

@@ -111,6 +111,9 @@ release or unchanged local snapshot version does not prove availability:
   registration retains the entered path for correction; the editor has no backend.
 - Per-platform target visibility and frustum styles are controlled presentation
   settings; preserve missing values and false/zero when resolving inheritance.
+- The Target tab controls `showTarget` and `targetStyle` for the separate ST 0601
+  crosshair and dashed line; the VMTI tab controls detection targets. Validate
+  drafts before saving, including Target fields on an inactive tab.
 
 When these exports are absent, use the installed lower-level controls or discuss
 an upgrade if the requested feature requires it. Do not assume unpublished APIs.

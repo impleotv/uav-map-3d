@@ -1,5 +1,6 @@
 export type Attitude = { heading: number; pitch: number; roll: number };
 export type LineStyle = { color: string; width: number; opacity: number };
+export type TargetStyle = { color: string; width: number; crosshairSize: number };
 export type FrustumStyle = { rays: LineStyle; groundOutline: LineStyle };
 export type Position = { latitude: number; longitude: number; height: number; reference?: "ellipsoid" | "msl" };
 export type GroundPosition = Omit<Position,"height"> & {height?:number};
@@ -15,6 +16,8 @@ export type Platform = {
   sensor: Attitude | null;
   fov: { horizontal: number; vertical: number } | null;
   frameCenter: GroundPosition | null;
+  /** Normalized MISB ST 0601 target location (tags 40–42), independent of the frame center and VMTI. */
+  targetLocation?: GroundPosition | null;
   frameCorners?: (GroundPosition | null)[] | null;
   frameCenterOffEarth?: boolean;
   frameCornersOffEarth?: boolean[];

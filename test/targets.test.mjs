@@ -59,6 +59,7 @@ test("target primitives reuse bounded slots, honor visibility and release all re
   const frame=(prefix,count)=>({key:prefix,targets:Array.from({length:count},(_,i)=>({id:`${prefix}-${i}`,box:{left:0.1,top:0.1,right:0.2,bottom:0.2}}))});
   for(let i=0;i<20;i++)layer.upsert("stream:258","A","1",frame(String(i),500),corners,project);
   assert.equal(layer.stats.active,500);assert.equal(layer.stats.allocated,500);
+  assert.equal(layer.items.values().next().value.line.material.uniforms.dashLength,4,"small estimated boxes use short dashes");
   layer.upsert("other:258","B","1",frame("other",1),corners,project);
   assert.equal(layer.stats.active,501);
   layer.configure({visible:false});const before=projections;
