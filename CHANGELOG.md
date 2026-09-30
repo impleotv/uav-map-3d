@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/impleotv/uav-map-3d/compare/v0.4.1...v0.5.0) (2026-09-30)
+
+### Features
+
+* Add Target presentation ([d2506d7](https://github.com/impleotv/uav-map-3d/commit/d2506d78fec02f1cb2652dcee7759ebf8d3844fa))
+
+### Maintenance
+
+* Update scripts ([a1e735d](https://github.com/impleotv/uav-map-3d/commit/a1e735d3e81acbe053b46f9e909be0f6cf6696f2))
+* ver0.4.1 ([ea31883](https://github.com/impleotv/uav-map-3d/commit/ea31883d8cb291bd108f7de506293588abdef939))
+
 ## [0.4.1](https://github.com/impleotv/uav-map-3d/compare/v0.4.0...v0.4.1) (2026-09-27)
 
 ### Bug Fixes
