@@ -9,16 +9,20 @@ Cesium, and has no React, STView, backend, playback or MISB dependency.
 For AI-assisted integration, see [Skills](HOWTO.md#skills) for installing the
 library's portable agent skill from GitHub or the bundled package.
 
+Once `0.5.0` is published to GitHub Packages, authenticate with a token that
+has `read:packages` access and configure the `@impleotv-pm` scope to use
+`https://npm.pkg.github.com`. Then install:
+
 ```sh
-npm install github:impleotv/uav-map-3d#v0.4.0 cesium@1.145.0
+npm install @impleotv-pm/uav-map-3d@^0.5.0 cesium@1.145.0
 ```
 
-The package name is `@impleotv-pm/uav-map-3d`. Git installs compile the source
-through `prepare`; consumers receive ES modules and TypeScript declarations.
+The package name is `@impleotv-pm/uav-map-3d`. Consumers receive ES modules
+and TypeScript declarations.
 Use Node 22.21+ (22.x) or Node 24+ for the bundled development and release tools. The
 renderer requires the tested Cesium 1.145.0 peer so the application and
-renderer use one Cesium instance. Git access uses your existing credentials;
-never embed a token in dependency URLs.
+renderer use one Cesium instance. Keep package tokens in user or environment
+npm configuration, never in dependency URLs.
 
 ## Vite integration
 
@@ -173,7 +177,7 @@ npm install --no-save --package-lock=false C:/Work/uav-map-3d/impleotv-pm-uav-ma
 ```
 
 Repack and reinstall after changes. This avoids linked packages resolving a
-second Cesium instance. `npm ci` restores STView's committed Git dependency;
+second Cesium instance. `npm ci` restores STView's committed dependency;
 its normal CMake build runs `npm ci` as well. Do not commit a local file dependency.
 
 ## Release
@@ -182,8 +186,11 @@ Releases use [release-it](https://github.com/release-it/release-it) and its
 [Conventional Changelog plugin](https://github.com/release-it/conventional-changelog).
 Install dependencies with `npm ci`, and have GNU Make and Git available. Sign in
 once with `gh auth login` (or set `GITHUB_TOKEN` to a token with repository
-contents write access), and configure Git credentials for pushing. Commit your changes on a
-branch with an upstream, then run:
+contents write access), configure Git credentials for pushing, and authenticate
+npm to GitHub Packages with a classic personal access token with
+`write:packages`. See [HOWTO.md](HOWTO.md#release) for the setup and the
+one-time `0.5.0` backfill. Commit your changes on a branch with an upstream,
+then run:
 
 ```sh
 make release-preview
@@ -209,17 +216,19 @@ changing files or publishing; it uses local history, so fetch tags first if
 needed. The release requires a clean working tree, updates the package version,
 lockfile and [CHANGELOG.md](CHANGELOG.md), then runs tests, type checks and
 packed-consumer verification. After validation it commits the release, creates
-`v<version>`, pushes the branch and tags atomically, and publishes a GitHub release.
+`v<version>`, pushes the branch and tags atomically, publishes to GitHub Packages,
+and creates a GitHub release.
 The package tarball and full changelog are attached, and the changelog is included
 inside the package. GitHub release notes use the generated entry. No version is
 released automatically when there are only maintenance changes.
 
-If a release fails, inspect the local commit/tag and GitHub draft before retrying;
+If a release fails, inspect the local commit/tag, GitHub draft and published
+package version before retrying;
 do not move a published tag. See release-it's
 [recovery options](https://github.com/release-it/release-it/blob/main/docs/github-releases.md#update-the-latest-release)
 for completing an existing release without incrementing again.
 
 Without Make, use `npm run release` or `npm run release -- --preview`, optionally
-adding a version/bump argument. Consumers pin the Git tag and commit their
-generated lockfiles. No npm registry publication is performed. Source uses
+adding a version/bump argument. Consumers can use a semver range from GitHub
+Packages and commit their generated lockfiles. Source uses
 `UNLICENSED` metadata; asset/dependency notices are in [NOTICE.md](NOTICE.md).

@@ -1,6 +1,9 @@
 {
   "name": "@impleotv-pm/uav-map-3d",
   "version": "0.5.0",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "Framework-neutral Cesium UAV scene renderer with sensor footprints and targets",
   "type": "module",
   "license": "UNLICENSED",
